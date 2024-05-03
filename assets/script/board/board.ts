@@ -10,18 +10,21 @@ import {
     math,
     Node,
     Prefab,
+    randomRangeInt,
     UITransform,
     view,
 } from "cc";
 import { customizeSingleCell } from "../cell/customizeSingleCell";
-import { customizeSingleLadder } from "../ladder/customizeSingleLadder";
 
 const { ccclass, property } = _decorator;
 
 @ccclass("board")
 export class board extends Component {
+    snakes: number[] = [];
+    ladders: number[] = [];
     designResolution: math.Size;
     rowNo = 0;
+    cells: { i: number; j: number; label: string }[] = [];
 
     @property({ type: Node })
     inputNode: Node = null;
@@ -62,20 +65,32 @@ export class board extends Component {
                 const row = instantiate(this.row);
                 row.getComponent(Layout).horizontalDirection =
                     i % 2 == 0 ? Layout.HorizontalDirection.LEFT_TO_RIGHT : Layout.HorizontalDirection.RIGHT_TO_LEFT;
-                for (let j = 1; j <= 10; j++) {
+                for (let j = 0; j < 10; j++) {
                     const node = instantiate(this.cell);
-                    node.getComponent(customizeSingleCell).setLable(i * 10 + j);
+                    node.getComponent(customizeSingleCell).setLable(i * 10 + (j + 1));
                     row.addChild(node);
                 }
                 row.getComponent(UITransform).height = this.designResolution.height / 10;
                 row.getComponent(UITransform).width = this.designResolution.width / 10;
                 this.node.addChild(row);
             }
-
-            // for (let i = 0; i < parseInt(this.ladderEditBox.string); i++) {
-            //     const ladder = instantiate(this.ladderPrefab);
-            //     ladder.getComponent(customizeSingleLadder).setLadder();
-            // }
+            this.custom(parseInt(this.snakeLabel.string), parseInt(this.ladderLabel.string));
         }
+    }
+    custom(numSnakes: number, numLadders: number) {
+        for (let i = 0; i < numSnakes; i++) {
+            let start = randomRangeInt(10, 80);
+            this.getCordinates(start);
+            this.snakes.push(start);
+        }
+
+        console.log(this.snakes);
+        console.log(this.ladders);
+    }
+
+    getCordinates(score: number) {
+        const y = (score % 10) - 1;
+        const x = parseInt((score / 10 - 1).toString());
+        console.log("x", x, "y", y);
     }
 }
