@@ -21,9 +21,9 @@ export class customizeSingleCell extends Component {
     update(deltaTime: number) {}
     setLable(count: number) {
         this.designResolution = view.getDesignResolutionSize();
+
         this.label.string = count.toString();
-        this.node.getComponent(UITransform).height = this.designResolution.height / 10;
-        this.node.getComponent(UITransform).width = this.designResolution.width / 10;
+
         this.image.spriteFrame = count % 2 == 0 ? this.yellow : this.blue;
     }
 }
