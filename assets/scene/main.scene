@@ -2099,8 +2099,8 @@
     "_target": null,
     "_left": 0,
     "_right": 0,
-    "_top": 90.00312499999997,
-    "_bottom": 48.79687499999997,
+    "_top": 90.00312499999995,
+    "_bottom": 48.796875,
     "_horizontalCenter": 0,
     "_verticalCenter": 0,
     "_isAbsLeft": true,
@@ -2269,8 +2269,8 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 0,
-      "y": 0,
+      "x": -640,
+      "y": -360,
       "z": 0
     },
     "_lrot": {
@@ -2321,8 +2321,8 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": -576,
-      "y": 0,
+      "x": 64,
+      "y": 360,
       "z": 0
     },
     "_lrot": {
@@ -2566,8 +2566,8 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 0,
-      "y": 0,
+      "x": 640,
+      "y": 360,
       "z": 0
     },
     "_lrot": {
@@ -2702,8 +2702,8 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 576,
-      "y": 0,
+      "x": 1216,
+      "y": 360,
       "z": 0
     },
     "_lrot": {
@@ -2947,7 +2947,7 @@
     "_allowSleep": true,
     "_gravityScale": 0,
     "_linearDamping": 17,
-    "_angularDamping": 0,
+    "_angularDamping": 30,
     "_linearVelocity": {
       "__type__": "cc.Vec2",
       "x": 0,
@@ -3117,8 +3117,8 @@
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
-      "x": 0.5,
-      "y": 0.5
+      "x": 0,
+      "y": 0
     },
     "_id": "35JZcrLVlIEI82MpZSK1g2"
   },
@@ -3210,6 +3210,9 @@
       "__uuid__": "c3af13ac-777a-4833-bee4-07cf2ae76d58",
       "__expectedType__": "cc.Prefab"
     },
+    "game": {
+      "__id__": 55
+    },
     "row": {
       "__uuid__": "412f1266-0fd3-4f9d-ba12-cebf103d9dc5",
       "__expectedType__": "cc.Prefab"
@@ -3219,6 +3222,10 @@
     },
     "snakeLabel": {
       "__id__": 16
+    },
+    "snakePrefab": {
+      "__uuid__": "e9fcc5db-f40b-434b-bdec-4d4a63519114",
+      "__expectedType__": "cc.Prefab"
     },
     "ladderEditBox": {
       "__id__": 36

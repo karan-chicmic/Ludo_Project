@@ -33,6 +33,9 @@ export class board extends Component {
     @property({ type: Prefab })
     cell: Prefab = null;
 
+    @property({ type: Node })
+    game: Node = null;
+
     @property({ type: Prefab })
     row: Prefab = null;
     @property({ type: EditBoxComponent })
@@ -40,6 +43,9 @@ export class board extends Component {
 
     @property({ type: Label })
     snakeLabel: Label = null;
+
+    @property({ type: Prefab })
+    snakePrefab: Prefab = null;
 
     @property({ type: EditBoxComponent })
     ladderEditBox: EditBoxComponent = null;
@@ -53,6 +59,10 @@ export class board extends Component {
     @property({ type: Prefab })
     ladderPrefab: Prefab = null;
 
+    cordintates = {
+        height: 0,
+        width: 0,
+    };
     start() {}
 
     update(deltaTime: number) {}
@@ -70,34 +80,49 @@ export class board extends Component {
                     const node = instantiate(this.cell);
                     node.getComponent(customizeSingleCell).setLable(i * 10 + (j + 1));
                     row.addChild(node);
-                    console.log(
-                        "width",
-                        row.getComponent(UITransform).width,
-                        "height",
-                        row.getComponent(UITransform).height
-                    );
                 }
                 row.getComponent(Layout).horizontalDirection =
                     i % 2 == 0 ? Layout.HorizontalDirection.LEFT_TO_RIGHT : Layout.HorizontalDirection.RIGHT_TO_LEFT;
                 this.board.addChild(row);
             }
-            // this.custom(parseInt(this.snakeLabel.string), parseInt(this.ladderLabel.string));
+            this.custom(parseInt(this.snakeLabel.string), parseInt(this.ladderLabel.string), this.designResolution);
         }
     }
-    // custom(numSnakes: number, numLadders: number) {
-    //     for (let i = 0; i < numSnakes; i++) {
-    //         let start = randomRangeInt(10, 80);
-    //         this.getCordinates(start);
-    //         this.snakes.push(start);
-    //     }
+    custom(numSnakes: number, numLadders: number, designResolution: math.Size) {
+        for (let i = 0; i < numSnakes; i++) {
+            const snake = instantiate(this.snakePrefab);
+            let start = randomRangeInt(10, 80);
+            const cordintates = this.getCordinates(start, designResolution);
 
-    //     console.log(this.snakes);
-    //     console.log(this.ladders);
-    // }
+            this.snakes.push(start);
+            snake.setPosition(cordintates.width, cordintates.height);
+            this.game.addChild(snake);
+            console.log("cordinates", cordintates);
+        }
+        for (let i = 0; i < numLadders; i++) {
+            const ladder = instantiate(this.ladderPrefab);
+            let start = randomRangeInt(10, 80);
+            const cordintates = this.getCordinates(start, designResolution);
 
-    // getCordinates(score: number) {
-    //     const y = (score % 10) - 1;
-    //     const x = parseInt((score / 10 - 1).toString());
-    //     console.log("x", x, "y", y);
-    // }
+            this.snakes.push(start);
+            ladder.setPosition(cordintates.width, cordintates.height);
+            this.game.addChild(ladder);
+            console.log("cordinates", cordintates);
+        }
+    }
+
+    getCordinates(score: number, designResolution: math.Size) {
+        const y = (score % 10) - 1;
+        const x = parseInt((score / 10 - 1).toString());
+        console.log("x", x, "y", y);
+        if (x % 2 == 0) {
+            this.cordintates.width = (designResolution.width / 10) * (10 - y);
+            this.cordintates.height = (designResolution.height / 10) * x;
+            return this.cordintates;
+        } else {
+            this.cordintates.width = designResolution.width / 10;
+            this.cordintates.height = (designResolution.height / 10) * x;
+            return this.cordintates;
+        }
+    }
 }
