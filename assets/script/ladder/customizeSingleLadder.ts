@@ -12,7 +12,7 @@ export class customizeSingleLadder extends Component {
 
     update(deltaTime: number) {}
 
-    setLadder() {
-        this.ladder.spriteFrame = this.ladderArray[randomRangeInt(0, this.ladderArray.length)];
-    }
+    // setLadder() {
+    //     this.ladder.spriteFrame = this.ladderArray[randomRangeInt(0, this.ladderArray.length)];
+    // }
 }

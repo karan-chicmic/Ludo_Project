@@ -10,11 +10,15 @@ import {
     Label,
     Layout,
     math,
+    misc,
     Node,
     Prefab,
+    Quat,
     randomRangeInt,
     Sprite,
     tween,
+    UITransform,
+    Vec3,
 } from "cc";
 import { customizeSingleCell } from "../cell/customizeSingleCell";
 import { customizeSingleSnake } from "../snake/customizeSingleSnake";
@@ -86,6 +90,9 @@ export class board extends Component {
     @property({ type: Node })
     player2Gotti: Node;
 
+    player2SixCounter: any;
+    player1SixCounter: any;
+
     start() {}
 
     update(deltaTime: number) {
@@ -139,9 +146,6 @@ export class board extends Component {
 
             this.snakes.push({ start, end });
             console.log("snakeStartCellNode", snakeStartCellNode.getWorldPosition());
-            // snake.setPosition(snakeStartCellNode.getWorldPosition());
-            // snake.getComponent(customizeSingleSnake).setSnake();
-            // this.game.addChild(snake);
         }
     }
     generateLadders(numLadders: number) {
@@ -154,13 +158,26 @@ export class board extends Component {
                 end = randomRangeInt(30, 99);
             }
             let ladderStartCellNode = this.cellMap.get(start.toString());
+            let ladderEndCellNode = this.cellMap.get(end.toString());
+
             console.log("ladder start", start);
-            // console.log("ladder end", end);
-            this.ladders.push({ start, end });
             console.log("ladderStartCellNode", ladderStartCellNode.getWorldPosition());
-            // ladder.setPosition(ladderStartCellNode.getWorldPosition());
-            // ladder.getComponent(customizeSingleLadder).setLadder();
-            // this.game.addChild(ladder);
+            console.log("ladder end", end);
+            console.log("ladder end cell node", ladderEndCellNode.getWorldPosition());
+
+            let dx = ladderEndCellNode.getWorldPosition().x - ladderStartCellNode.getWorldPosition().x;
+            let dy = ladderEndCellNode.getWorldPosition().y - ladderStartCellNode.getWorldPosition().y;
+            let diagonalDistance = Math.sqrt(dx * dx + dy * dy);
+
+            ladder.getComponent(UITransform).height = diagonalDistance;
+
+            let angleRadians = Math.atan2(dy, dx);
+            let angleDegrees = angleRadians * (180 / Math.PI);
+            ladder.eulerAngles = new Vec3(0, 0, -(90 - angleDegrees));
+
+            ladder.setWorldPosition(ladderStartCellNode.getWorldPosition());
+
+            this.game.addChild(ladder);
         }
     }
 
@@ -236,6 +253,4 @@ export class board extends Component {
         }
         this.currPlayer = Player.Player1;
     }
-
-    startGame() {}
 }
