@@ -3,6 +3,7 @@ import {
     color,
     Component,
     director,
+    easing,
     EditBoxComponent,
     input,
     instantiate,
@@ -14,6 +15,7 @@ import {
     randomRangeInt,
     Sprite,
     SpriteFrame,
+    tween,
     UITransform,
     view,
 } from "cc";
@@ -176,20 +178,53 @@ export class board extends Component {
             this.game.addChild(this.player2Gotti);
             this.currPlayer = Player.Player1;
         } else if (this.firstStart && this.currPlayer == Player.Player1) {
-            let newLabel = this.player1CurrLabel + diceNumber;
+            this.player1Turn(diceNumber);
+        } else if (this.secondStart && this.currPlayer == Player.Player2) {
+            this.player2Turn(diceNumber);
+        }
+    }
+
+    player1Turn(diceNumber: number) {
+        for (let i = 1; i <= diceNumber; i++) {
+            let newLabel = this.player1CurrLabel + 1;
             this.player1CurrLabel = newLabel;
             console.log("player 1 label", newLabel);
             let newPos = this.cellMap.get(newLabel.toString()).getWorldPosition();
-            this.player1Gotti.setPosition(newPos);
-            this.currPlayer = Player.Player2;
-        } else if (this.secondStart && this.currPlayer == Player.Player2) {
-            let newLabel = this.player2CurrLabel + diceNumber;
+
+            tween(this.player1Gotti)
+                .to(
+                    i,
+                    {
+                        position: newPos,
+                    },
+                    {
+                        easing: "quadInOut",
+                    }
+                )
+                .start();
+        }
+        this.currPlayer = Player.Player2;
+    }
+    player2Turn(diceNumber: number) {
+        for (let i = 1; i <= diceNumber; i++) {
+            let newLabel = this.player2CurrLabel + 1;
             this.player2CurrLabel = newLabel;
             console.log("player 2 label", newLabel);
             let newPos = this.cellMap.get(newLabel.toString()).getWorldPosition();
-            this.player2Gotti.setPosition(newPos);
-            this.currPlayer = Player.Player1;
+
+            tween(this.player2Gotti)
+                .to(
+                    i,
+                    {
+                        position: newPos,
+                    },
+                    {
+                        easing: "quadInOut",
+                    }
+                )
+                .start();
         }
+        this.currPlayer = Player.Player1;
     }
 
     startGame() {}
