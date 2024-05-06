@@ -14,10 +14,7 @@ import {
     Prefab,
     randomRangeInt,
     Sprite,
-    SpriteFrame,
     tween,
-    UITransform,
-    view,
 } from "cc";
 import { customizeSingleCell } from "../cell/customizeSingleCell";
 import { customizeSingleSnake } from "../snake/customizeSingleSnake";
@@ -31,8 +28,8 @@ const Player = {
 };
 @ccclass("board")
 export class board extends Component {
-    snakes: number[] = [];
-    ladders: number[] = [];
+    snakes: { start: number; end: number }[] = [];
+    ladders: { start: number; end: number }[] = [];
     currPlayer = Player.Player1;
 
     firstStart: boolean = false;
@@ -110,47 +107,60 @@ export class board extends Component {
                     let cellnode = instantiate(this.cell);
                     cellnode.getComponent(customizeSingleCell).setLable(i * 10 + (j + 1));
                     row.addChild(cellnode);
-                    // setTimeout(() => {
-                    //     console.log("pos", cellnode.getPosition());
-                    // }, 1);
                     this.cellMap.set(cellnode.getComponent(customizeSingleCell).getLabel(), cellnode);
                 }
                 row.getComponent(Layout).horizontalDirection =
                     i % 2 == 0 ? Layout.HorizontalDirection.LEFT_TO_RIGHT : Layout.HorizontalDirection.RIGHT_TO_LEFT;
                 this.board.addChild(row);
+                row.getComponent(Layout).updateLayout();
             }
-            setTimeout(() => {
-                this.generateSnakes(parseInt(this.snakeEditBox.string));
-                this.generateLadders(parseInt(this.ladderEditBox.string));
-            }, 1);
+            this.board.getComponent(Layout).updateLayout();
+            // setTimeout(() => {
+
+            this.generateSnakes(parseInt(this.snakeEditBox.string));
+            this.generateLadders(parseInt(this.ladderEditBox.string));
+            // }, 1);
         }
     }
 
     generateSnakes(numSnakes: number) {
+        this.board.getComponent(Layout).updateLayout();
         for (let i = 0; i < numSnakes; i++) {
             let start = randomRangeInt(10, 80);
+            let end = randomRangeInt(30, 99);
+            while (end <= start || end - start < 20) {
+                end = randomRangeInt(30, 99);
+            }
             let snake = instantiate(this.snakePrefab);
 
             let snakeStartCellNode = this.cellMap.get(start.toString());
             console.log("snake start", start);
+            // console.log("snake end", end);
 
-            this.snakes.push(start);
+            this.snakes.push({ start, end });
             console.log("snakeStartCellNode", snakeStartCellNode.getWorldPosition());
-            snake.setPosition(snakeStartCellNode.getWorldPosition());
-            snake.getComponent(customizeSingleSnake).setSnake();
-            this.game.addChild(snake);
+            // snake.setPosition(snakeStartCellNode.getWorldPosition());
+            // snake.getComponent(customizeSingleSnake).setSnake();
+            // this.game.addChild(snake);
         }
     }
     generateLadders(numLadders: number) {
+        this.board.getComponent(Layout).updateLayout();
         for (let i = 0; i < numLadders; i++) {
             let ladder = instantiate(this.ladderPrefab);
             let start = randomRangeInt(10, 80);
+            let end = randomRangeInt(30, 99);
+            while (end <= start || end - start < 20) {
+                end = randomRangeInt(30, 99);
+            }
             let ladderStartCellNode = this.cellMap.get(start.toString());
             console.log("ladder start", start);
-            this.ladders.push(start);
-            ladder.setPosition(ladderStartCellNode.getWorldPosition());
-            ladder.getComponent(customizeSingleLadder).setLadder();
-            this.game.addChild(ladder);
+            // console.log("ladder end", end);
+            this.ladders.push({ start, end });
+            console.log("ladderStartCellNode", ladderStartCellNode.getWorldPosition());
+            // ladder.setPosition(ladderStartCellNode.getWorldPosition());
+            // ladder.getComponent(customizeSingleLadder).setLadder();
+            // this.game.addChild(ladder);
         }
     }
 
