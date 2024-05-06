@@ -22,9 +22,9 @@ const { ccclass, property } = _decorator;
 export class board extends Component {
     snakes: number[] = [];
     ladders: number[] = [];
-    designResolution: math.Size;
-    rowNo = 0;
+
     cells: { i: number; j: number; label: string }[] = [];
+    cellMap: Map<string, Node> = new Map<string, Node>();
 
     @property({ type: Node })
     board: Node = null;
@@ -70,59 +70,72 @@ export class board extends Component {
         if (this.snakeEditBox.string == "" || this.ladderEditBox.string == "") {
             this.errorLabel.string = "Enter Both Fields";
         } else {
-            console.log(this.snakeEditBox.string, this.ladderEditBox.string);
+            console.log("no of snakes", this.snakeEditBox.string, "no of ladders", this.ladderEditBox.string);
             this.inputNode.active = false;
-            this.designResolution = view.getDesignResolutionSize();
-            for (let i = 0; i < 10; i++) {
-                const row = instantiate(this.row);
+            // for (let i = 0; i < 10; i++) {
+            //     let row = instantiate(this.row);
+            //     for (let j = 0; j < 10; j++) {
+            //         let cellnode = instantiate(this.cell);
+            //         cellnode.getComponent(customizeSingleCell).setLable(i * 10 + (j + 1));
+            //         row.addChild(cellnode);
+            //         // setTimeout(() => {
+            //         //     console.log("pos", cellnode.getPosition());
+            //         // }, 1);
+            //         this.cellMap.set(cellnode.getComponent(customizeSingleCell).getLabel(), cellnode);
+            //     }
+            //     row.getComponent(Layout).horizontalDirection =
+            //         i % 2 == 0 ? Layout.HorizontalDirection.LEFT_TO_RIGHT : Layout.HorizontalDirection.RIGHT_TO_LEFT;
+            //     this.board.addChild(row);
+            // }
+            // setTimeout(() => {
+            //     this.generateSnakes(parseInt(this.snakeEditBox.string));
+            //     this.generateLadders(parseInt(this.ladderEditBox.string));
+            // }, 1);
+            this.createBoard()
+                .then(() => this.generateSnakes(parseInt(this.snakeEditBox.string)))
+                .then(() => this.generateLadders(parseInt(this.ladderEditBox.string)));
+            // this.board.getComponent(Layout).updateLayout();
+        }
+    }
 
-                for (let j = 0; j < 10; j++) {
-                    const node = instantiate(this.cell);
-                    node.getComponent(customizeSingleCell).setLable(i * 10 + (j + 1));
-                    row.addChild(node);
-                }
-                row.getComponent(Layout).horizontalDirection =
-                    i % 2 == 0 ? Layout.HorizontalDirection.LEFT_TO_RIGHT : Layout.HorizontalDirection.RIGHT_TO_LEFT;
-                this.board.addChild(row);
+    async createBoard() {
+        for (let i = 0; i < 10; i++) {
+            let row = instantiate(this.row);
+            for (let j = 0; j < 10; j++) {
+                let cellnode = instantiate(this.cell);
+                cellnode.getComponent(customizeSingleCell).setLable(i * 10 + (j + 1));
+                row.addChild(cellnode);
+                // setTimeout(() => {
+                //     console.log("pos", cellnode.getPosition());
+                // }, 1);
+                this.cellMap.set(cellnode.getComponent(customizeSingleCell).getLabel(), cellnode);
             }
-            this.custom(parseInt(this.snakeLabel.string), parseInt(this.ladderLabel.string), this.designResolution);
+            row.getComponent(Layout).horizontalDirection =
+                i % 2 == 0 ? Layout.HorizontalDirection.LEFT_TO_RIGHT : Layout.HorizontalDirection.RIGHT_TO_LEFT;
+            this.board.addChild(row);
         }
     }
-    custom(numSnakes: number, numLadders: number, designResolution: math.Size) {
+    async generateSnakes(numSnakes: number) {
         for (let i = 0; i < numSnakes; i++) {
-            const snake = instantiate(this.snakePrefab);
             let start = randomRangeInt(10, 80);
-            const cordintates = this.getCordinates(start, designResolution);
+            let snake = instantiate(this.snakePrefab);
+
+            let snakeStartCellNode = this.cellMap.get(start.toString());
+            console.log("start", start);
 
             this.snakes.push(start);
-            snake.setPosition(cordintates.width, cordintates.height);
+            console.log("snakeStartCellNode", snakeStartCellNode.getPosition());
+            snake.setPosition(snakeStartCellNode.getPosition());
             this.game.addChild(snake);
-            console.log("cordinates", cordintates);
-        }
-        for (let i = 0; i < numLadders; i++) {
-            const ladder = instantiate(this.ladderPrefab);
-            let start = randomRangeInt(10, 80);
-            const cordintates = this.getCordinates(start, designResolution);
-
-            this.snakes.push(start);
-            ladder.setPosition(cordintates.width, cordintates.height);
-            this.game.addChild(ladder);
-            console.log("cordinates", cordintates);
         }
     }
+    async generateLadders(numLadders: number) {
+        for (let i = 0; i < numLadders; i++) {
+            let ladder = instantiate(this.ladderPrefab);
+            let start = randomRangeInt(10, 80);
 
-    getCordinates(score: number, designResolution: math.Size) {
-        const y = (score % 10) - 1;
-        const x = parseInt((score / 10 - 1).toString());
-        console.log("x", x, "y", y);
-        if (x % 2 == 0) {
-            this.cordintates.width = (designResolution.width / 10) * (10 - y);
-            this.cordintates.height = (designResolution.height / 10) * x;
-            return this.cordintates;
-        } else {
-            this.cordintates.width = designResolution.width / 10;
-            this.cordintates.height = (designResolution.height / 10) * x;
-            return this.cordintates;
+            this.snakes.push(start);
+            this.game.addChild(ladder);
         }
     }
 }

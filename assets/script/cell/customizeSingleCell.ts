@@ -26,4 +26,8 @@ export class customizeSingleCell extends Component {
 
         this.image.spriteFrame = count % 2 == 0 ? this.yellow : this.blue;
     }
+
+    getLabel() {
+        return this.label.string;
+    }
 }
