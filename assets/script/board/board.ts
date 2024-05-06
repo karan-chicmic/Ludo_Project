@@ -1,5 +1,6 @@
 import {
     _decorator,
+    color,
     Component,
     director,
     EditBoxComponent,
@@ -11,19 +12,34 @@ import {
     Node,
     Prefab,
     randomRangeInt,
+    Sprite,
+    SpriteFrame,
     UITransform,
     view,
 } from "cc";
 import { customizeSingleCell } from "../cell/customizeSingleCell";
+import { customizeSingleSnake } from "../snake/customizeSingleSnake";
+import { customizeSingleLadder } from "../ladder/customizeSingleLadder";
+import { dice } from "../dice/dice";
 
 const { ccclass, property } = _decorator;
-
+const Player = {
+    Player1: "player 1",
+    Player2: "player 2",
+};
 @ccclass("board")
 export class board extends Component {
     snakes: number[] = [];
     ladders: number[] = [];
+    currPlayer = Player.Player1;
 
-    cells: { i: number; j: number; label: string }[] = [];
+    firstStart: boolean = false;
+    secondStart: boolean = false;
+
+    player1CurrLabel: number = 0;
+    player2CurrLabel: number = 0;
+
+    cells: { i: number; j: number; label: string; type: string }[] = [];
     cellMap: Map<string, Node> = new Map<string, Node>();
 
     @property({ type: Node })
@@ -59,13 +75,27 @@ export class board extends Component {
     @property({ type: Prefab })
     ladderPrefab: Prefab = null;
 
-    cordintates = {
-        height: 0,
-        width: 0,
-    };
+    @property({ type: Sprite })
+    diceImage: Sprite = null;
+
+    @property({ type: Label })
+    currPlayerLabel: Label = null;
+
+    @property({ type: Node })
+    player1Gotti: Node;
+
+    @property({ type: Node })
+    player2Gotti: Node;
+
     start() {}
 
-    update(deltaTime: number) {}
+    update(deltaTime: number) {
+        if (this.currPlayer == Player.Player1) {
+            this.currPlayerLabel.string = "Player 1 Turn";
+        } else {
+            this.currPlayerLabel.string = "Player 2 Turn";
+        }
+    }
     onClick() {
         if (this.snakeEditBox.string == "" || this.ladderEditBox.string == "") {
             this.errorLabel.string = "Enter Both Fields";
@@ -103,8 +133,9 @@ export class board extends Component {
             console.log("snake start", start);
 
             this.snakes.push(start);
-            console.log("snakeStartCellNode", snakeStartCellNode.getPosition());
+            console.log("snakeStartCellNode", snakeStartCellNode.getWorldPosition());
             snake.setPosition(snakeStartCellNode.getWorldPosition());
+            snake.getComponent(customizeSingleSnake).setSnake();
             this.game.addChild(snake);
         }
     }
@@ -116,7 +147,50 @@ export class board extends Component {
             console.log("ladder start", start);
             this.ladders.push(start);
             ladder.setPosition(ladderStartCellNode.getWorldPosition());
+            ladder.getComponent(customizeSingleLadder).setLadder();
             this.game.addChild(ladder);
         }
     }
+
+    rollDice() {
+        this.diceImage.getComponent(dice).generateDiceNumber();
+        let diceNumber = this.diceImage.getComponent(dice).getDiceNumber();
+        console.log(diceNumber);
+        if (!(diceNumber == 6) && this.currPlayer == Player.Player1 && !this.firstStart) {
+            this.currPlayer = Player.Player2;
+        } else if (!(diceNumber == 6) && this.currPlayer == Player.Player2 && !this.secondStart) {
+            this.currPlayer = Player.Player1;
+        } else if (diceNumber == 6 && this.currPlayer == Player.Player1 && !this.firstStart) {
+            this.firstStart = true;
+            this.player1CurrLabel = 1;
+            console.log("player 1 first 6", this.cellMap.get("1").getWorldPosition());
+            this.player1Gotti.setPosition(this.cellMap.get("1").getWorldPosition());
+            this.game.addChild(this.player1Gotti);
+            this.currPlayer = Player.Player2;
+        } else if (diceNumber == 6 && this.currPlayer == Player.Player2 && !this.secondStart) {
+            this.secondStart = true;
+            this.player2CurrLabel = 1;
+            console.log("player 2 first 6", this.cellMap.get("1").getWorldPosition());
+
+            this.player2Gotti.setPosition(this.cellMap.get("1").getWorldPosition());
+            this.game.addChild(this.player2Gotti);
+            this.currPlayer = Player.Player1;
+        } else if (this.firstStart && this.currPlayer == Player.Player1) {
+            let newLabel = this.player1CurrLabel + diceNumber;
+            this.player1CurrLabel = newLabel;
+            console.log("player 1 label", newLabel);
+            let newPos = this.cellMap.get(newLabel.toString()).getWorldPosition();
+            this.player1Gotti.setPosition(newPos);
+            this.currPlayer = Player.Player2;
+        } else if (this.secondStart && this.currPlayer == Player.Player2) {
+            let newLabel = this.player2CurrLabel + diceNumber;
+            this.player2CurrLabel = newLabel;
+            console.log("player 2 label", newLabel);
+            let newPos = this.cellMap.get(newLabel.toString()).getWorldPosition();
+            this.player2Gotti.setPosition(newPos);
+            this.currPlayer = Player.Player1;
+        }
+    }
+
+    startGame() {}
 }
