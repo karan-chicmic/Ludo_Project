@@ -72,69 +72,50 @@ export class board extends Component {
         } else {
             console.log("no of snakes", this.snakeEditBox.string, "no of ladders", this.ladderEditBox.string);
             this.inputNode.active = false;
-            // for (let i = 0; i < 10; i++) {
-            //     let row = instantiate(this.row);
-            //     for (let j = 0; j < 10; j++) {
-            //         let cellnode = instantiate(this.cell);
-            //         cellnode.getComponent(customizeSingleCell).setLable(i * 10 + (j + 1));
-            //         row.addChild(cellnode);
-            //         // setTimeout(() => {
-            //         //     console.log("pos", cellnode.getPosition());
-            //         // }, 1);
-            //         this.cellMap.set(cellnode.getComponent(customizeSingleCell).getLabel(), cellnode);
-            //     }
-            //     row.getComponent(Layout).horizontalDirection =
-            //         i % 2 == 0 ? Layout.HorizontalDirection.LEFT_TO_RIGHT : Layout.HorizontalDirection.RIGHT_TO_LEFT;
-            //     this.board.addChild(row);
-            // }
-            // setTimeout(() => {
-            //     this.generateSnakes(parseInt(this.snakeEditBox.string));
-            //     this.generateLadders(parseInt(this.ladderEditBox.string));
-            // }, 1);
-            this.createBoard()
-                .then(() => this.generateSnakes(parseInt(this.snakeEditBox.string)))
-                .then(() => this.generateLadders(parseInt(this.ladderEditBox.string)));
-            // this.board.getComponent(Layout).updateLayout();
+            for (let i = 0; i < 10; i++) {
+                let row = instantiate(this.row);
+                for (let j = 0; j < 10; j++) {
+                    let cellnode = instantiate(this.cell);
+                    cellnode.getComponent(customizeSingleCell).setLable(i * 10 + (j + 1));
+                    row.addChild(cellnode);
+                    // setTimeout(() => {
+                    //     console.log("pos", cellnode.getPosition());
+                    // }, 1);
+                    this.cellMap.set(cellnode.getComponent(customizeSingleCell).getLabel(), cellnode);
+                }
+                row.getComponent(Layout).horizontalDirection =
+                    i % 2 == 0 ? Layout.HorizontalDirection.LEFT_TO_RIGHT : Layout.HorizontalDirection.RIGHT_TO_LEFT;
+                this.board.addChild(row);
+            }
+            setTimeout(() => {
+                this.generateSnakes(parseInt(this.snakeEditBox.string));
+                this.generateLadders(parseInt(this.ladderEditBox.string));
+            }, 1);
         }
     }
 
-    async createBoard() {
-        for (let i = 0; i < 10; i++) {
-            let row = instantiate(this.row);
-            for (let j = 0; j < 10; j++) {
-                let cellnode = instantiate(this.cell);
-                cellnode.getComponent(customizeSingleCell).setLable(i * 10 + (j + 1));
-                row.addChild(cellnode);
-                // setTimeout(() => {
-                //     console.log("pos", cellnode.getPosition());
-                // }, 1);
-                this.cellMap.set(cellnode.getComponent(customizeSingleCell).getLabel(), cellnode);
-            }
-            row.getComponent(Layout).horizontalDirection =
-                i % 2 == 0 ? Layout.HorizontalDirection.LEFT_TO_RIGHT : Layout.HorizontalDirection.RIGHT_TO_LEFT;
-            this.board.addChild(row);
-        }
-    }
-    async generateSnakes(numSnakes: number) {
+    generateSnakes(numSnakes: number) {
         for (let i = 0; i < numSnakes; i++) {
             let start = randomRangeInt(10, 80);
             let snake = instantiate(this.snakePrefab);
 
             let snakeStartCellNode = this.cellMap.get(start.toString());
-            console.log("start", start);
+            console.log("snake start", start);
 
             this.snakes.push(start);
             console.log("snakeStartCellNode", snakeStartCellNode.getPosition());
-            snake.setPosition(snakeStartCellNode.getPosition());
+            snake.setPosition(snakeStartCellNode.getWorldPosition());
             this.game.addChild(snake);
         }
     }
-    async generateLadders(numLadders: number) {
+    generateLadders(numLadders: number) {
         for (let i = 0; i < numLadders; i++) {
             let ladder = instantiate(this.ladderPrefab);
             let start = randomRangeInt(10, 80);
-
-            this.snakes.push(start);
+            let ladderStartCellNode = this.cellMap.get(start.toString());
+            console.log("ladder start", start);
+            this.ladders.push(start);
+            ladder.setPosition(ladderStartCellNode.getWorldPosition());
             this.game.addChild(ladder);
         }
     }
