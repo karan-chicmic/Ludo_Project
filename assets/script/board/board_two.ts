@@ -21,6 +21,7 @@ import {
     Vec3,
 } from "cc";
 import { customizeSingleCell } from "../cell/customizeSingleCell";
+
 import { dice } from "../dice/dice";
 
 const { ccclass, property } = _decorator;
@@ -28,6 +29,20 @@ const Player = {
     Player1: "player 1",
     Player2: "player 2",
 };
+
+enum CellType {
+    Normal,
+    SnakeStart,
+    SnakeEnd,
+    LadderStart,
+    LadderEnd,
+}
+
+interface CellInfo {
+    cell: Node;
+    cellType: CellType;
+}
+
 @ccclass("board")
 export class board extends Component {
     snakeMap: Map<number, number> = new Map<number, number>();
@@ -40,13 +55,7 @@ export class board extends Component {
     player1CurrLabel: number = 0;
     player2CurrLabel: number = 0;
 
-    cells: {
-        cell: Node;
-        hasSnakeStart: boolean;
-        hasSnakeEnd: boolean;
-        hasLadderStart: boolean;
-        hasLadderEnd: boolean;
-    }[] = [];
+    cellArray: CellInfo[] = [];
     cellMap: Map<string, Node> = new Map<string, Node>();
 
     @property({ type: Node })
@@ -106,6 +115,7 @@ export class board extends Component {
             this.currPlayerLabel.string = "Player 2 Turn";
         }
     }
+
     onClick() {
         if (this.snakeEditBox.string == "" || this.ladderEditBox.string == "") {
             this.errorLabel.string = "Enter Both Fields";
@@ -119,6 +129,7 @@ export class board extends Component {
                     cellnode.getComponent(customizeSingleCell).setLable(i * 10 + (j + 1));
                     row.addChild(cellnode);
                     this.cellMap.set(cellnode.getComponent(customizeSingleCell).getLabel(), cellnode);
+                    this.cellArray.push({ cell: cellnode, cellType: CellType.Normal });
                 }
                 row.getComponent(Layout).horizontalDirection =
                     i % 2 == 0 ? Layout.HorizontalDirection.LEFT_TO_RIGHT : Layout.HorizontalDirection.RIGHT_TO_LEFT;
@@ -126,11 +137,8 @@ export class board extends Component {
                 row.getComponent(Layout).updateLayout();
             }
             this.board.getComponent(Layout).updateLayout();
-            // setTimeout(() => {
-
             this.generateSnakes(parseInt(this.snakeEditBox.string));
             this.generateLadders(parseInt(this.ladderEditBox.string));
-            // }, 1);
         }
     }
 
@@ -143,28 +151,22 @@ export class board extends Component {
                 end = randomRangeInt(30, 99);
             }
             let snake = instantiate(this.snakePrefab);
-            this.snakeMap.set(end, start);
+            this.snakeMap.set(start, end);
+
             let snakeStartCellNode = this.cellMap.get(start.toString());
             let snakeEndCellNode = this.cellMap.get(end.toString());
-            console.log("snake start", start);
-            console.log("snakeStartCellNode", snakeStartCellNode.getWorldPosition());
-            console.log("snake end", end);
-            console.log("snake end cell node", snakeEndCellNode.getWorldPosition());
 
-            // this.snakes.push({ start, end });
-            let dx = snakeEndCellNode.getWorldPosition().x - snakeStartCellNode.getWorldPosition().x;
-            let dy = snakeEndCellNode.getWorldPosition().y - snakeStartCellNode.getWorldPosition().y;
-            let diagonalDistance = Math.sqrt(dx * dx + dy * dy);
-            snake.getComponent(UITransform).height = diagonalDistance;
-            let angleRadians = Math.atan2(dy, dx);
-            let angleDegrees = angleRadians * (180 / Math.PI);
-            snake.eulerAngles = new Vec3(0, 0, -(90 - angleDegrees));
+            snake.getComponent(UITransform).height = Math.abs(
+                snakeEndCellNode.position.y - snakeStartCellNode.position.y
+            );
 
-            snake.setWorldPosition(snakeStartCellNode.getWorldPosition());
+            this.cellArray[start - 1].cellType = CellType.SnakeStart;
+            this.cellArray[end - 1].cellType = CellType.SnakeEnd;
 
             this.game.addChild(snake);
         }
     }
+
     generateLadders(numLadders: number) {
         this.board.getComponent(Layout).updateLayout();
         for (let i = 0; i < numLadders; i++) {
@@ -175,25 +177,16 @@ export class board extends Component {
                 end = randomRangeInt(30, 99);
             }
             this.ladderMap.set(start, end);
+
             let ladderStartCellNode = this.cellMap.get(start.toString());
             let ladderEndCellNode = this.cellMap.get(end.toString());
 
-            console.log("ladder start", start);
-            console.log("ladderStartCellNode", ladderStartCellNode.getWorldPosition());
-            console.log("ladder end", end);
-            console.log("ladder end cell node", ladderEndCellNode.getWorldPosition());
+            ladder.getComponent(UITransform).height = Math.abs(
+                ladderEndCellNode.position.y - ladderStartCellNode.position.y
+            );
 
-            let dx = ladderEndCellNode.getWorldPosition().x - ladderStartCellNode.getWorldPosition().x;
-            let dy = ladderEndCellNode.getWorldPosition().y - ladderStartCellNode.getWorldPosition().y;
-            let diagonalDistance = Math.sqrt(dx * dx + dy * dy);
-
-            ladder.getComponent(UITransform).height = diagonalDistance;
-
-            let angleRadians = Math.atan2(dy, dx);
-            let angleDegrees = angleRadians * (180 / Math.PI);
-            ladder.eulerAngles = new Vec3(0, 0, -(90 - angleDegrees));
-
-            ladder.setWorldPosition(ladderStartCellNode.getWorldPosition());
+            this.cellArray[start - 1].cellType = CellType.LadderStart;
+            this.cellArray[end - 1].cellType = CellType.LadderEnd;
 
             this.game.addChild(ladder);
         }
@@ -230,72 +223,105 @@ export class board extends Component {
     }
 
     player1Turn(diceNumber: number) {
-        let finalPosition = this.player1CurrLabel + diceNumber;
-        if (this.snakeMap.has(finalPosition)) {
-            let snakestartNumber = this.snakeMap.get(finalPosition);
-            let snakeStartNode = this.cellMap.get(snakestartNumber.toString());
-            let snakeStartPosition = snakeStartNode.getWorldPosition();
-            this.player1Gotti.setWorldPosition(snakeStartPosition);
-        } else if (this.ladderMap.has(finalPosition)) {
-            let ladderEndNumber = this.ladderMap.get(finalPosition);
-            let ladderEndNode = this.cellMap.get(ladderEndNumber.toString());
-            let ladderEndPosition = ladderEndNode.getWorldPosition();
-            this.player1Gotti.setWorldPosition(ladderEndPosition);
-        } else {
-            for (let i = 1; i <= diceNumber; i++) {
-                let newLabel = this.player1CurrLabel + 1;
-                this.player1CurrLabel = newLabel;
-                console.log("player 1 label", newLabel);
-                let newPos = this.cellMap.get(newLabel.toString()).getWorldPosition();
+        let finalLabel = this.player1CurrLabel + diceNumber;
+        let targetCellInfo = this.cellArray[finalLabel - 1];
 
-                tween(this.player1Gotti)
-                    .to(
-                        i,
-                        {
-                            position: newPos,
-                        },
-                        {
-                            easing: "quadInOut",
-                        }
-                    )
-                    .start();
-            }
+        switch (targetCellInfo.cellType) {
+            case CellType.SnakeStart:
+                console.log("Player 1  snake start.");
+                this.player1CurrLabel = this.snakeMap.get(this.player1CurrLabel);
+                break;
+            case CellType.SnakeEnd:
+                console.log("Player 1  snake end.");
+                this.player1CurrLabel = finalLabel - 1;
+                break;
+            case CellType.LadderStart:
+                console.log("Player 1  ladder start.");
+                this.player1CurrLabel = this.ladderMap.get(this.player1CurrLabel);
+                break;
+            case CellType.LadderEnd:
+                console.log("Player 1 ladder end.");
+                this.player1CurrLabel = finalLabel - 1;
+                break;
+            default:
+                this.player1CurrLabel = finalLabel;
+                break;
         }
+
+        let newPos = this.cellMap.get(this.player1CurrLabel.toString()).getWorldPosition();
+
+        tween(this.player1Gotti)
+            .to(
+                diceNumber,
+                {
+                    position: newPos,
+                },
+                {
+                    easing: "quadInOut",
+                }
+            )
+            .start();
+
         this.currPlayer = Player.Player2;
     }
+
     player2Turn(diceNumber: number) {
-        let finalPosition = this.player2CurrLabel + diceNumber;
-
-        if (this.snakeMap.has(finalPosition)) {
-            let snakestartNumber = this.snakeMap.get(finalPosition);
-            let snakeStartNode = this.cellMap.get(snakestartNumber.toString());
-            let snakeStartPosition = snakeStartNode.getWorldPosition();
-            this.player2Gotti.setWorldPosition(snakeStartPosition);
-        } else if (this.ladderMap.has(finalPosition)) {
-            let ladderEndNumber = this.ladderMap.get(finalPosition);
-            let ladderEndNode = this.cellMap.get(ladderEndNumber.toString());
-            let ladderEndPosition = ladderEndNode.getWorldPosition();
-            this.player2Gotti.setWorldPosition(ladderEndPosition);
-        } else {
-            for (let i = 1; i <= diceNumber; i++) {
-                let newLabel = this.player2CurrLabel + 1;
-                this.player2CurrLabel = newLabel;
-                console.log("player 2 label", newLabel);
-                let newPos = this.cellMap.get(newLabel.toString()).getWorldPosition();
-
-                tween(this.player2Gotti)
-                    .to(
-                        i,
-                        {
-                            position: newPos,
-                        },
-                        {
-                            easing: "quadInOut",
-                        }
-                    )
-                    .start();
-            }
+        let finalLabel = this.player2CurrLabel + diceNumber;
+        let targetCellInfo = this.cellArray[finalLabel - 1];
+        switch (targetCellInfo.cellType) {
+            case CellType.SnakeStart:
+                console.log("Player 2  snake start.");
+                this.player1CurrLabel = this.snakeMap.get(this.player1CurrLabel);
+                break;
+            case CellType.SnakeEnd:
+                console.log("Player 2  snake end.");
+                this.player1CurrLabel = finalLabel - 1;
+                break;
+            case CellType.LadderStart:
+                console.log("Player 2  ladder start.");
+                this.player1CurrLabel = this.ladderMap.get(this.player1CurrLabel);
+                break;
+            case CellType.LadderEnd:
+                console.log("Player 2 ladder end.");
+                this.player1CurrLabel = finalLabel - 1;
+                break;
+            default:
+                this.player1CurrLabel = finalLabel;
+                break;
         }
+
+        let newPos = this.cellMap.get(this.player1CurrLabel.toString()).getWorldPosition();
+        tween(this.player1Gotti)
+            .to(
+                diceNumber,
+                {
+                    position: newPos,
+                },
+                {
+                    easing: "quadInOut",
+                }
+            )
+            .start();
+
         this.currPlayer = Player.Player1;
+        // for (let i = 1; i <= diceNumber; i++) {
+        //     let newLabel = this.player2CurrLabel + 1;
+        //     this.player2CurrLabel = newLabel;
+        //     console.log("player 2 label", newLabel);
+        //     let newPos = this.cellMap.get(newLabel.toString()).getWorldPosition();
+
+        //     tween(this.player2Gotti)
+        //         .to(
+        //             i,
+        //             {
+        //                 position: newPos,
+        //             },
+        //             {
+        //                 easing: "quadInOut",
+        //             }
+        //         )
+        //         .start();
+        // }
+        // this.currPlayer = Player.Player1;
     }
 }
