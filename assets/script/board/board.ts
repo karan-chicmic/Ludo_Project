@@ -32,8 +32,8 @@ const Player = {
 };
 @ccclass("board")
 export class board extends Component {
-    snakes: { start: number; end: number }[] = [];
-    ladders: { start: number; end: number }[] = [];
+    // snakes: { start: number; end: number }[] = [];
+    // ladders: { start: number; end: number }[] = [];
     currPlayer = Player.Player1;
 
     firstStart: boolean = false;
@@ -42,7 +42,13 @@ export class board extends Component {
     player1CurrLabel: number = 0;
     player2CurrLabel: number = 0;
 
-    cells: { i: number; j: number; label: string; type: string }[] = [];
+    cells: {
+        cell: Node;
+        hasSnakeStart: boolean;
+        hasSnakeEnd: boolean;
+        hasLadderStart: boolean;
+        hasLadderEnd: boolean;
+    }[] = [];
     cellMap: Map<string, Node> = new Map<string, Node>();
 
     @property({ type: Node })
@@ -141,11 +147,24 @@ export class board extends Component {
             let snake = instantiate(this.snakePrefab);
 
             let snakeStartCellNode = this.cellMap.get(start.toString());
+            let snakeEndCellNode = this.cellMap.get(end.toString());
             console.log("snake start", start);
-            // console.log("snake end", end);
-
-            this.snakes.push({ start, end });
             console.log("snakeStartCellNode", snakeStartCellNode.getWorldPosition());
+            console.log("snake end", end);
+            console.log("snake end cell node", snakeEndCellNode.getWorldPosition());
+
+            // this.snakes.push({ start, end });
+            let dx = snakeEndCellNode.getWorldPosition().x - snakeStartCellNode.getWorldPosition().x;
+            let dy = snakeEndCellNode.getWorldPosition().y - snakeStartCellNode.getWorldPosition().y;
+            let diagonalDistance = Math.sqrt(dx * dx + dy * dy);
+            snake.getComponent(UITransform).height = diagonalDistance;
+            let angleRadians = Math.atan2(dy, dx);
+            let angleDegrees = angleRadians * (180 / Math.PI);
+            snake.eulerAngles = new Vec3(0, 0, -(90 - angleDegrees));
+
+            snake.setWorldPosition(snakeStartCellNode.getWorldPosition());
+
+            this.game.addChild(snake);
         }
     }
     generateLadders(numLadders: number) {
