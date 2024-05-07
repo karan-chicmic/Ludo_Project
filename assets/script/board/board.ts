@@ -29,6 +29,7 @@ export class board extends Component {
     canRollDice: boolean = true;
     snakeMap: Map<number, number> = new Map<number, number>();
     ladderMap: Map<number, number> = new Map<number, number>();
+    generateCellSet: Set<number> = new Set<number>();
     currPlayer = Player.Player1;
 
     firstStart: boolean = false;
@@ -154,8 +155,13 @@ export class board extends Component {
         this.board.getComponent(Layout).updateLayout();
         for (let i = 0; i < numSnakes; i++) {
             let start = randomRangeInt(10, 80);
+            this.generateCellSet.add(start);
+            while (this.generateCellSet.has(start)) {
+                start = randomRangeInt(10, 80);
+            }
             let end = randomRangeInt(30, 99);
-            while (end <= start || end - start < 20) {
+            this.generateCellSet.add(end);
+            while (end <= start || end - start < 20 || this.generateCellSet.has(end)) {
                 end = randomRangeInt(30, 99);
             }
             let snake = instantiate(this.snakePrefab);
@@ -186,8 +192,13 @@ export class board extends Component {
         for (let i = 0; i < numLadders; i++) {
             let ladder = instantiate(this.ladderPrefab);
             let start = randomRangeInt(10, 80);
+            this.generateCellSet.add(start);
+            while (this.generateCellSet.has(start)) {
+                start = randomRangeInt(10, 80);
+            }
             let end = randomRangeInt(30, 99);
-            while (end <= start || end - start < 20) {
+            this.generateCellSet.add(end);
+            while (end <= start || end - start < 20 || this.generateCellSet.has(end)) {
                 end = randomRangeInt(30, 99);
             }
             this.ladderMap.set(start, end);
