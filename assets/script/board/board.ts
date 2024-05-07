@@ -26,7 +26,6 @@ const Player = {
 };
 @ccclass("board")
 export class board extends Component {
-    canRollDice: boolean = true;
     snakeMap: Map<number, number> = new Map<number, number>();
     ladderMap: Map<number, number> = new Map<number, number>();
     generateCellSet: Set<number> = new Set<number>();
@@ -155,15 +154,15 @@ export class board extends Component {
         this.board.getComponent(Layout).updateLayout();
         for (let i = 0; i < numSnakes; i++) {
             let start = randomRangeInt(10, 80);
-            this.generateCellSet.add(start);
             while (this.generateCellSet.has(start)) {
                 start = randomRangeInt(10, 80);
             }
+            this.generateCellSet.add(start);
             let end = randomRangeInt(30, 99);
-            this.generateCellSet.add(end);
             while (end <= start || end - start < 20 || this.generateCellSet.has(end)) {
                 end = randomRangeInt(30, 99);
             }
+            this.generateCellSet.add(end);
             let snake = instantiate(this.snakePrefab);
             this.snakeMap.set(end, start);
             let snakeStartCellNode = this.cellMap.get(start.toString());
@@ -192,15 +191,15 @@ export class board extends Component {
         for (let i = 0; i < numLadders; i++) {
             let ladder = instantiate(this.ladderPrefab);
             let start = randomRangeInt(10, 80);
-            this.generateCellSet.add(start);
             while (this.generateCellSet.has(start)) {
                 start = randomRangeInt(10, 80);
             }
+            this.generateCellSet.add(start);
             let end = randomRangeInt(30, 99);
-            this.generateCellSet.add(end);
             while (end <= start || end - start < 20 || this.generateCellSet.has(end)) {
                 end = randomRangeInt(30, 99);
             }
+            this.generateCellSet.add(end);
             this.ladderMap.set(start, end);
             let ladderStartCellNode = this.cellMap.get(start.toString());
             let ladderEndCellNode = this.cellMap.get(end.toString());
@@ -227,44 +226,39 @@ export class board extends Component {
     }
 
     rollDice() {
-        if (this.canRollDice) {
-            this.diceImage.getComponent(dice).generateDiceNumber();
-            let diceNumber = this.diceImage.getComponent(dice).getDiceNumber();
-            console.log(diceNumber);
-            if (!(diceNumber == 6) && this.currPlayer == Player.Player1 && !this.firstStart) {
-                this.currPlayer = Player.Player2;
-            } else if (!(diceNumber == 6) && this.currPlayer == Player.Player2 && !this.secondStart) {
-                this.currPlayer = Player.Player1;
-            } else if (diceNumber == 6 && this.currPlayer == Player.Player1 && !this.firstStart) {
-                this.firstStart = true;
-                this.player1CurrLabel = 1;
-                console.log("player 1 first 6", this.cellMap.get("1").getWorldPosition());
-                this.audioSource.clip = this.startPlayClip;
-                this.audioSource.play();
-                this.player1Gotti.setPosition(this.cellMap.get("1").getWorldPosition());
-                this.game.addChild(this.player1Gotti);
-                this.currPlayer = Player.Player2;
-            } else if (diceNumber == 6 && this.currPlayer == Player.Player2 && !this.secondStart) {
-                this.secondStart = true;
-                this.player2CurrLabel = 1;
-                console.log("player 2 first 6", this.cellMap.get("1").getWorldPosition());
-                this.audioSource.clip = this.startPlayClip;
-                this.audioSource.play();
-                this.player2Gotti.setPosition(this.cellMap.get("1").getWorldPosition());
-                this.game.addChild(this.player2Gotti);
-                this.currPlayer = Player.Player1;
-            } else if (this.firstStart && this.currPlayer == Player.Player1) {
-                this.player1Turn(diceNumber);
-            } else if (this.secondStart && this.currPlayer == Player.Player2) {
-                this.player2Turn(diceNumber);
-            }
-        } else {
-            console.log("wait for your turn!");
+        this.diceImage.getComponent(dice).generateDiceNumber();
+        let diceNumber = this.diceImage.getComponent(dice).getDiceNumber();
+        console.log(diceNumber);
+        if (!(diceNumber == 6) && this.currPlayer == Player.Player1 && !this.firstStart) {
+            this.currPlayer = Player.Player2;
+        } else if (!(diceNumber == 6) && this.currPlayer == Player.Player2 && !this.secondStart) {
+            this.currPlayer = Player.Player1;
+        } else if (diceNumber == 6 && this.currPlayer == Player.Player1 && !this.firstStart) {
+            this.firstStart = true;
+            this.player1CurrLabel = 1;
+            console.log("player 1 first 6", this.cellMap.get("1").getWorldPosition());
+            this.audioSource.clip = this.startPlayClip;
+            this.audioSource.play();
+            this.player1Gotti.setPosition(this.cellMap.get("1").getWorldPosition());
+            this.game.addChild(this.player1Gotti);
+            this.currPlayer = Player.Player2;
+        } else if (diceNumber == 6 && this.currPlayer == Player.Player2 && !this.secondStart) {
+            this.secondStart = true;
+            this.player2CurrLabel = 1;
+            console.log("player 2 first 6", this.cellMap.get("1").getWorldPosition());
+            this.audioSource.clip = this.startPlayClip;
+            this.audioSource.play();
+            this.player2Gotti.setPosition(this.cellMap.get("1").getWorldPosition());
+            this.game.addChild(this.player2Gotti);
+            this.currPlayer = Player.Player1;
+        } else if (this.firstStart && this.currPlayer == Player.Player1) {
+            this.player1Turn(diceNumber);
+        } else if (this.secondStart && this.currPlayer == Player.Player2) {
+            this.player2Turn(diceNumber);
         }
     }
 
     player1Turn(diceNumber: number) {
-        this.canRollDice = false;
         let finalPosition = this.player1CurrLabel + diceNumber;
         if (diceNumber == 100) {
             console.log("player 1 win");
@@ -296,34 +290,14 @@ export class board extends Component {
             this.player1Gotti.setWorldPosition(ladderEndPosition);
             this.player1CurrLabel = ladderEndNumber;
         } else {
-            for (let i = 1; i <= diceNumber; i++) {
-                this.audioSource.clip = this.jumpClip;
-                // this.audioSource.play();
-                let newLabel = this.player1CurrLabel + 1;
-                this.player1CurrLabel = newLabel;
-                console.log("player 1 label", newLabel);
-                let newPos = this.cellMap.get(newLabel.toString()).getWorldPosition();
-
-                tween(this.player1Gotti)
-                    .to(
-                        i,
-                        {
-                            position: newPos,
-                        },
-                        {
-                            easing: "quadInOut",
-                        }
-                    )
-                    .call(() => this.audioSource.play())
-
-                    .start();
-            }
+            this.movePlayer(this.player1CurrLabel, this.player1Gotti, diceNumber, finalPosition, () => {
+                this.currPlayer = Player.Player2;
+            });
+            this.player1CurrLabel = finalPosition;
         }
-        this.currPlayer = Player.Player2;
-        this.canRollDice = true;
     }
+
     player2Turn(diceNumber: number) {
-        this.canRollDice = false;
         if (diceNumber == 100) {
             console.log("player 2 win");
             //here i will also play win audio
@@ -353,29 +327,44 @@ export class board extends Component {
             this.player2Gotti.setWorldPosition(ladderEndPosition);
             this.player2CurrLabel = ladderEndNumber;
         } else {
-            this.audioSource.clip = this.jumpClip;
-            for (let i = 1; i <= diceNumber; i++) {
-                // this.audioSource.play();
-                let newLabel = this.player2CurrLabel + 1;
-                this.player2CurrLabel = newLabel;
-                console.log("player 2 label", newLabel);
-                let newPos = this.cellMap.get(newLabel.toString()).getWorldPosition();
-
-                tween(this.player2Gotti)
-                    .to(
-                        i,
-                        {
-                            position: newPos,
-                        },
-                        {
-                            easing: "quadInOut",
-                        }
-                    )
-                    .call(() => this.audioSource.play())
-                    .start();
-            }
+            this.movePlayer(this.player2CurrLabel, this.player2Gotti, diceNumber, finalPosition, () => {
+                this.currPlayer = Player.Player1;
+            });
+            this.player2CurrLabel = finalPosition;
         }
-        this.currPlayer = Player.Player1;
-        this.canRollDice = true;
+    }
+
+    movePlayer(
+        currLable: number,
+        playerNode: Node,
+        remainingMoves: number,
+        finalPosition: number,
+        callback: () => void
+    ) {
+        if (remainingMoves <= 0) {
+            callback();
+            return;
+        }
+
+        const newLabel = currLable + 1;
+
+        console.log("player label", newLabel);
+        const newPos = this.cellMap.get(newLabel.toString()).getWorldPosition();
+
+        tween(playerNode)
+            .to(
+                1,
+                {
+                    position: newPos,
+                },
+                {
+                    easing: "quadInOut",
+                }
+            )
+            .call(() => {
+                this.audioSource.play();
+                this.movePlayer(currLable + 1, playerNode, remainingMoves - 1, finalPosition, callback);
+            })
+            .start();
     }
 }
