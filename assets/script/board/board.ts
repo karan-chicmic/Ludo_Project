@@ -272,6 +272,7 @@ export class board extends Component {
             let finalStep = 100 - remainingStep;
             let finalNode = this.cellMap.get(finalStep.toString());
             this.player1Gotti.setWorldPosition(finalNode.getWorldPosition());
+            this.currPlayer = Player.Player2;
         }
         if (this.snakeMap.has(finalPosition)) {
             this.audioSource.clip = this.biteClip;
@@ -281,6 +282,7 @@ export class board extends Component {
             let snakeStartPosition = snakeStartNode.getWorldPosition();
             this.player1Gotti.setWorldPosition(snakeStartPosition);
             this.player1CurrLabel = snakestartNumber;
+            this.currPlayer = Player.Player2;
         } else if (this.ladderMap.has(finalPosition)) {
             this.audioSource.clip = this.climbClip;
             this.audioSource.play();
@@ -289,6 +291,7 @@ export class board extends Component {
             let ladderEndPosition = ladderEndNode.getWorldPosition();
             this.player1Gotti.setWorldPosition(ladderEndPosition);
             this.player1CurrLabel = ladderEndNumber;
+            this.currPlayer = Player.Player2;
         } else {
             this.movePlayer(this.player1CurrLabel, this.player1Gotti, diceNumber, finalPosition, () => {
                 this.currPlayer = Player.Player2;
@@ -309,6 +312,7 @@ export class board extends Component {
             let finalStep = 100 - remainingStep;
             let finalNode = this.cellMap.get(finalStep.toString());
             this.player2Gotti.setWorldPosition(finalNode.getWorldPosition());
+            this.currPlayer = Player.Player1;
         }
         if (this.snakeMap.has(finalPosition)) {
             this.audioSource.clip = this.biteClip;
@@ -318,6 +322,7 @@ export class board extends Component {
             let snakeStartPosition = snakeStartNode.getWorldPosition();
             this.player2Gotti.setWorldPosition(snakeStartPosition);
             this.player2CurrLabel = snakestartNumber;
+            this.currPlayer = Player.Player1;
         } else if (this.ladderMap.has(finalPosition)) {
             this.audioSource.clip = this.climbClip;
             this.audioSource.play();
@@ -326,6 +331,7 @@ export class board extends Component {
             let ladderEndPosition = ladderEndNode.getWorldPosition();
             this.player2Gotti.setWorldPosition(ladderEndPosition);
             this.player2CurrLabel = ladderEndNumber;
+            this.currPlayer = Player.Player1;
         } else {
             this.movePlayer(this.player2CurrLabel, this.player2Gotti, diceNumber, finalPosition, () => {
                 this.currPlayer = Player.Player1;
