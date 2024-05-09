@@ -159,13 +159,21 @@ export class board extends Component {
     generateSnakes(numSnakes: number) {
         this.board.getComponent(Layout).updateLayout();
         for (let i = 0; i < numSnakes; i++) {
-            let start = randomRangeInt(10, 80);
+            let start = randomRangeInt(3, 80);
             while (this.generateCellSet.has(start)) {
-                start = randomRangeInt(10, 80);
+                start = randomRangeInt(3, 80);
             }
             this.generateCellSet.add(start);
             let end = randomRangeInt(30, 99);
-            while (end <= start || end - start < 20 || this.generateCellSet.has(end)) {
+            while (
+                end <= start ||
+                end - start < 20 ||
+                this.generateCellSet.has(end) ||
+                this.generateCellSet.has(end - 1) ||
+                this.generateCellSet.has(end - 2) ||
+                this.generateCellSet.has(end + 1) ||
+                this.generateCellSet.has(end + 2)
+            ) {
                 end = randomRangeInt(30, 99);
             }
             this.generateCellSet.add(end);
@@ -196,8 +204,14 @@ export class board extends Component {
         this.board.getComponent(Layout).updateLayout();
         for (let i = 0; i < numLadders; i++) {
             let ladder = instantiate(this.ladderPrefab);
-            let start = randomRangeInt(10, 80);
-            while (this.generateCellSet.has(start)) {
+            let start = randomRangeInt(3, 80);
+            while (
+                this.generateCellSet.has(start) ||
+                this.generateCellSet.has(start - 1) ||
+                this.generateCellSet.has(start - 2) ||
+                this.generateCellSet.has(start + 1) ||
+                this.generateCellSet.has(start + 2)
+            ) {
                 start = randomRangeInt(10, 80);
             }
             this.generateCellSet.add(start);
@@ -287,16 +301,14 @@ export class board extends Component {
             this.audioSource.clip = this.winClip;
             this.audioSource.play();
             //here i will also play win audio
-        }
-        if (finalPosition > 100) {
+        } else if (finalPosition > 100) {
             let frontStep = 100 - this.player1CurrLabel;
             let remainingStep = diceNumber - frontStep;
             let finalStep = 100 - remainingStep;
             let finalNode = this.cellMap.get(finalStep.toString());
             this.player1Gotti.setWorldPosition(finalNode.getWorldPosition());
             this.currPlayer = nextPlayer;
-        }
-        if (this.snakeMap.has(finalPosition)) {
+        } else if (this.snakeMap.has(finalPosition)) {
             this.audioSource.clip = this.biteClip;
             this.audioSource.play();
             let snakestartNumber = this.snakeMap.get(finalPosition);
@@ -323,20 +335,20 @@ export class board extends Component {
     }
 
     player2Turn(diceNumber: number, nextPlayer) {
+        let finalPosition = this.player2CurrLabel + diceNumber;
         if (diceNumber == 100) {
             console.log("player 2 win");
             //here i will also play win audio
-        }
-        let finalPosition = this.player2CurrLabel + diceNumber;
-        if (finalPosition > 100) {
+            this.audioSource.clip = this.winClip;
+            this.audioSource.play();
+        } else if (finalPosition > 100) {
             let frontStep = 100 - this.player1CurrLabel;
             let remainingStep = diceNumber - frontStep;
             let finalStep = 100 - remainingStep;
             let finalNode = this.cellMap.get(finalStep.toString());
             this.player2Gotti.setWorldPosition(finalNode.getWorldPosition());
             this.currPlayer = nextPlayer;
-        }
-        if (this.snakeMap.has(finalPosition)) {
+        } else if (this.snakeMap.has(finalPosition)) {
             this.audioSource.clip = this.biteClip;
             this.audioSource.play();
             let snakestartNumber = this.snakeMap.get(finalPosition);
