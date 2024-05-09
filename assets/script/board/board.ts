@@ -37,6 +37,9 @@ export class board extends Component {
     player1CurrLabel: number = 0;
     player2CurrLabel: number = 0;
 
+    player1sixes = 0;
+    player2sixes = 0;
+
     cells: {
         cell: Node;
         hasSnakeStart: boolean;
@@ -91,8 +94,8 @@ export class board extends Component {
     @property({ type: Node })
     player2Gotti: Node;
 
-    player2SixCounter: any;
-    player1SixCounter: any;
+    player1BeforeSixCell;
+    player2BeforeSixCell;
 
     @property({ type: AudioClip })
     startPlayClip: AudioClip = null;
@@ -231,6 +234,22 @@ export class board extends Component {
         console.log(diceNumber);
         if (!(diceNumber == 6) && this.currPlayer == Player.Player1 && !this.firstStart) {
             this.currPlayer = Player.Player2;
+        } else if (diceNumber == 6 && this.currPlayer == Player.Player1 && this.firstStart) {
+            this.player1BeforeSixCell = this.player1CurrLabel;
+            this.player1sixes = this.player1sixes + 1;
+            if (this.player1sixes == 3) {
+                this.player1Gotti.setPosition(this.cellMap.get(this.player1BeforeSixCell).getWorldPosition());
+            }
+            this.player1sixes = 0;
+            this.player1Turn(diceNumber, Player.Player1);
+        } else if (diceNumber == 6 && this.currPlayer == Player.Player2 && this.secondStart) {
+            this.player2BeforeSixCell = this.player2CurrLabel;
+            this.player2sixes = this.player2sixes + 1;
+            if (this.player2sixes == 3) {
+                this.player2Gotti.setPosition(this.cellMap.get(this.player2BeforeSixCell).getWorldPosition());
+            }
+            this.player2sixes = 0;
+            this.player2Turn(diceNumber, Player.Player2);
         } else if (!(diceNumber == 6) && this.currPlayer == Player.Player2 && !this.secondStart) {
             this.currPlayer = Player.Player1;
         } else if (diceNumber == 6 && this.currPlayer == Player.Player1 && !this.firstStart) {
@@ -252,13 +271,13 @@ export class board extends Component {
             this.game.addChild(this.player2Gotti);
             this.currPlayer = Player.Player1;
         } else if (this.firstStart && this.currPlayer == Player.Player1) {
-            this.player1Turn(diceNumber);
+            this.player1Turn(diceNumber, Player.Player2);
         } else if (this.secondStart && this.currPlayer == Player.Player2) {
-            this.player2Turn(diceNumber);
+            this.player2Turn(diceNumber, Player.Player1);
         }
     }
 
-    player1Turn(diceNumber: number) {
+    player1Turn(diceNumber: number, nextPlayer) {
         let finalPosition = this.player1CurrLabel + diceNumber;
         if (diceNumber == 100) {
             console.log("player 1 win");
@@ -272,7 +291,7 @@ export class board extends Component {
             let finalStep = 100 - remainingStep;
             let finalNode = this.cellMap.get(finalStep.toString());
             this.player1Gotti.setWorldPosition(finalNode.getWorldPosition());
-            this.currPlayer = Player.Player2;
+            this.currPlayer = nextPlayer;
         }
         if (this.snakeMap.has(finalPosition)) {
             this.audioSource.clip = this.biteClip;
@@ -282,7 +301,7 @@ export class board extends Component {
             let snakeStartPosition = snakeStartNode.getWorldPosition();
             this.player1Gotti.setWorldPosition(snakeStartPosition);
             this.player1CurrLabel = snakestartNumber;
-            this.currPlayer = Player.Player2;
+            this.currPlayer = nextPlayer;
         } else if (this.ladderMap.has(finalPosition)) {
             this.audioSource.clip = this.climbClip;
             this.audioSource.play();
@@ -291,16 +310,16 @@ export class board extends Component {
             let ladderEndPosition = ladderEndNode.getWorldPosition();
             this.player1Gotti.setWorldPosition(ladderEndPosition);
             this.player1CurrLabel = ladderEndNumber;
-            this.currPlayer = Player.Player2;
+            this.currPlayer = nextPlayer;
         } else {
             this.movePlayer(this.player1CurrLabel, this.player1Gotti, diceNumber, finalPosition, () => {
-                this.currPlayer = Player.Player2;
+                this.currPlayer = nextPlayer;
             });
             this.player1CurrLabel = finalPosition;
         }
     }
 
-    player2Turn(diceNumber: number) {
+    player2Turn(diceNumber: number, nextPlayer) {
         if (diceNumber == 100) {
             console.log("player 2 win");
             //here i will also play win audio
@@ -312,7 +331,7 @@ export class board extends Component {
             let finalStep = 100 - remainingStep;
             let finalNode = this.cellMap.get(finalStep.toString());
             this.player2Gotti.setWorldPosition(finalNode.getWorldPosition());
-            this.currPlayer = Player.Player1;
+            this.currPlayer = nextPlayer;
         }
         if (this.snakeMap.has(finalPosition)) {
             this.audioSource.clip = this.biteClip;
@@ -322,7 +341,7 @@ export class board extends Component {
             let snakeStartPosition = snakeStartNode.getWorldPosition();
             this.player2Gotti.setWorldPosition(snakeStartPosition);
             this.player2CurrLabel = snakestartNumber;
-            this.currPlayer = Player.Player1;
+            this.currPlayer = nextPlayer;
         } else if (this.ladderMap.has(finalPosition)) {
             this.audioSource.clip = this.climbClip;
             this.audioSource.play();
@@ -331,10 +350,10 @@ export class board extends Component {
             let ladderEndPosition = ladderEndNode.getWorldPosition();
             this.player2Gotti.setWorldPosition(ladderEndPosition);
             this.player2CurrLabel = ladderEndNumber;
-            this.currPlayer = Player.Player1;
+            this.currPlayer = nextPlayer;
         } else {
             this.movePlayer(this.player2CurrLabel, this.player2Gotti, diceNumber, finalPosition, () => {
-                this.currPlayer = Player.Player1;
+                this.currPlayer = nextPlayer;
             });
             this.player2CurrLabel = finalPosition;
         }
