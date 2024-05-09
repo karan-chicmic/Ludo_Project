@@ -15,22 +15,26 @@ export class customizeSingleSnake extends Component {
     update(deltaTime: number) {}
 
     setSnake(x: number, y: number) {
+        let remainingHeight;
+        let headAndTailHeight;
         console.log("total height", y);
         let middleHeight = this.findEvenMultiple(x, y);
-        console.log("middle height", middleHeight);
-        this.middle.getComponent(UITransform).height = middleHeight;
-        let remainingHeight = y - middleHeight;
-        let headAndTailHeight = remainingHeight / 2;
-        this.head.getComponent(UITransform).setAnchorPoint(0.2, 0.5);
-        this.head.getComponent(UITransform).height = headAndTailHeight;
-        console.log("head height", headAndTailHeight);
-        this.tail.getComponent(UITransform).height = headAndTailHeight;
-    }
-    findEvenMultiple(x: number, y: number) {
-        if (y % x === 0) {
-            return y - x;
+        if (y - middleHeight < x) {
+            this.middle.getComponent(UITransform).height = middleHeight - x;
+            remainingHeight = y - middleHeight;
+            headAndTailHeight = (remainingHeight + x) / 2;
+            this.head.getComponent(UITransform).height = headAndTailHeight;
+            console.log("head height", headAndTailHeight);
+            this.tail.getComponent(UITransform).height = headAndTailHeight;
+        } else {
+            console.log("middle height", middleHeight);
+            this.middle.getComponent(UITransform).height = middleHeight;
+            remainingHeight = y - middleHeight;
+            headAndTailHeight = remainingHeight / 2;
+            this.head.getComponent(UITransform).setAnchorPoint(0.2, 0);
+            this.head.getComponent(UITransform).height = headAndTailHeight;
+            console.log("head height", headAndTailHeight);
+            this.tail.getComponent(UITransform).height = headAndTailHeight;
         }
-
-        return Math.floor(y / x) * x;
     }
 }

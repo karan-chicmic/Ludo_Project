@@ -192,11 +192,12 @@ export class board extends Component {
             let dy = snakeEndCellNode.getWorldPosition().y - snakeStartCellNode.getWorldPosition().y;
             let diagonalDistance = Math.sqrt(dx * dx + dy * dy);
             snake.getComponent(UITransform).height = diagonalDistance;
-            snake.getComponent(customizeSingleSnake).setSnake(125, diagonalDistance);
+
             let angleRadians = Math.atan2(dy, dx);
             let angleDegrees = angleRadians * (180 / Math.PI);
             snake.eulerAngles = new Vec3(0, 0, -(90 - angleDegrees));
 
+            snake.getComponent(customizeSingleSnake).setSnake(93, diagonalDistance);
             snake.setWorldPosition(snakeStartCellNode.getWorldPosition());
 
             this.game.addChild(snake);
