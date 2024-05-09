@@ -3,6 +3,7 @@ import {
     AudioClip,
     AudioSource,
     AudioSourceComponent,
+    color,
     Component,
     EditBoxComponent,
     instantiate,
@@ -121,8 +122,10 @@ export class board extends Component {
     update(deltaTime: number) {
         if (this.currPlayer == Player.Player1) {
             this.currPlayerLabel.string = "Player 1 Turn";
+            this.diceImage.getComponent(Sprite).color = color(0, 136, 243);
         } else {
             this.currPlayerLabel.string = "Player 2 Turn";
+            this.diceImage.getComponent(Sprite).color = color(250, 0, 0);
         }
     }
     onClick() {
