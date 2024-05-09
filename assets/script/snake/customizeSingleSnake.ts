@@ -37,4 +37,11 @@ export class customizeSingleSnake extends Component {
             this.tail.getComponent(UITransform).height = headAndTailHeight;
         }
     }
+    findEvenMultiple(x: number, y: number) {
+        if (y % x === 0) {
+            return y - x;
+        }
+
+        return Math.floor(y / x) * x;
+    }
 }
