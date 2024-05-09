@@ -19,6 +19,7 @@ import {
 } from "cc";
 import { customizeSingleCell } from "../cell/customizeSingleCell";
 import { dice } from "../dice/dice";
+import { customizeSingleSnake } from "../snake/customizeSingleSnake";
 
 const { ccclass, property } = _decorator;
 const Player = {
@@ -191,6 +192,7 @@ export class board extends Component {
             let dy = snakeEndCellNode.getWorldPosition().y - snakeStartCellNode.getWorldPosition().y;
             let diagonalDistance = Math.sqrt(dx * dx + dy * dy);
             snake.getComponent(UITransform).height = diagonalDistance;
+            snake.getComponent(customizeSingleSnake).setSnake(125, diagonalDistance);
             let angleRadians = Math.atan2(dy, dx);
             let angleDegrees = angleRadians * (180 / Math.PI);
             snake.eulerAngles = new Vec3(0, 0, -(90 - angleDegrees));
@@ -406,5 +408,13 @@ export class board extends Component {
                 this.movePlayer(currLable + 1, playerNode, remainingMoves - 1, finalPosition, callback);
             })
             .start();
+    }
+
+    findEvenMultiple(x: number, y: number) {
+        if (y % x === 0) {
+            return y - x;
+        }
+
+        return Math.floor(y / x) * x;
     }
 }
