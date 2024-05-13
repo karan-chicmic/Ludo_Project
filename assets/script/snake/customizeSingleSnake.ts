@@ -28,21 +28,6 @@ export class customizeSingleSnake extends Component {
         console.log("head height", this.head.getComponent(UITransform).height);
         console.log("middle height", this.middle.getComponent(UITransform).height);
         console.log("tail height", this.tail.getComponent(UITransform).height);
-        // remainingHeight = y - middleHeight;
-        // headAndTailHeight = (remainingHeight + x) / 2;
-        // this.head.getComponent(UITransform).height = headAndTailHeight;
-        // console.log("head height", headAndTailHeight);
-        // this.tail.getComponent(UITransform).height = headAndTailHeight;
-        // } else {
-        //     console.log("middle height", middleHeight);
-        //     this.middle.getComponent(UITransform).height = middleHeight;
-        //     remainingHeight = y - middleHeight;
-        //     headAndTailHeight = remainingHeight / 2;
-        //     this.head.getComponent(UITransform).setAnchorPoint(0.2, 0);
-        //     this.head.getComponent(UITransform).height = headAndTailHeight;
-        //     console.log("head height", headAndTailHeight);
-        //     this.tail.getComponent(UITransform).height = headAndTailHeight;
-        // }
     }
     findEvenMultiple(x: number, y: number) {
         if (y % x === 0) {

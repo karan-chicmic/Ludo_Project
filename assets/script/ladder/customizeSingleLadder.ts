@@ -11,8 +11,4 @@ export class customizeSingleLadder extends Component {
     start() {}
 
     update(deltaTime: number) {}
-
-    // setLadder() {
-    //     this.ladder.spriteFrame = this.ladderArray[randomRangeInt(0, this.ladderArray.length)];
-    // }
 }
