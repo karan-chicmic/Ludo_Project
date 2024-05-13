@@ -5,6 +5,7 @@ import {
     AudioSourceComponent,
     color,
     Component,
+    director,
     easing,
     EditBoxComponent,
     instantiate,
@@ -311,6 +312,9 @@ export class board extends Component {
             this.audioSource.clip = this.winClip;
             tween(this.player1Gotti)
                 .to(1, { position: this.cellMap.get("100").getWorldPosition() }, { easing: "quadInOut" })
+                .call(() => {
+                    director.loadScene("win");
+                })
                 .start();
             this.audioSource.play();
             //here i will also play win audio
@@ -322,6 +326,7 @@ export class board extends Component {
             tween(this.player1Gotti)
                 .to(1, { position: this.cellMap.get("100").worldPosition }, { easing: "quadInOut" })
                 .to(1, { position: finalNode.getWorldPosition() }, { easing: "quadInOut" })
+                .call(() => this.audioSource.play())
                 .start();
         } else if (this.snakeMap.has(finalPosition)) {
             this.audioSource.clip = this.biteClip;
@@ -365,6 +370,9 @@ export class board extends Component {
             this.audioSource.clip = this.winClip;
             tween(this.player2Gotti)
                 .to(1, { position: this.cellMap.get("100").getWorldPosition() }, { easing: "quadInOut" })
+                .call(() => {
+                    director.loadScene("win");
+                })
                 .start();
             this.audioSource.play();
         } else if (finalPosition > 100) {
@@ -375,6 +383,7 @@ export class board extends Component {
             tween(this.player2Gotti)
                 .to(1, { position: this.cellMap.get("100").worldPosition }, { easing: "quadInOut" })
                 .to(1, { position: finalNode.getWorldPosition() }, { easing: "quadInOut" })
+                .call(() => this.audioSource.play())
                 .start();
 
             this.player2Gotti.setWorldPosition(finalNode.getWorldPosition());
