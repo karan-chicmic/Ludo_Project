@@ -140,9 +140,11 @@ export class board extends Component {
             this.inputNode.active = false;
             for (let i = 0; i < 10; i++) {
                 let row = instantiate(this.row);
+
                 for (let j = 0; j < 10; j++) {
                     let cellnode = instantiate(this.cell);
                     cellnode.getComponent(customizeSingleCell).setLable(i * 10 + (j + 1));
+
                     row.addChild(cellnode);
                     this.cellMap.set(cellnode.getComponent(customizeSingleCell).getLabel(), cellnode);
                 }
@@ -152,11 +154,9 @@ export class board extends Component {
                 row.getComponent(Layout).updateLayout();
             }
             this.board.getComponent(Layout).updateLayout();
-            // setTimeout(() => {
 
             this.generateSnakes(parseInt(this.snakeEditBox.string));
             this.generateLadders(parseInt(this.ladderEditBox.string));
-            // }, 1);
         }
     }
 
@@ -177,11 +177,6 @@ export class board extends Component {
                 this.generateCellSet.has(end - 2) ||
                 this.generateCellSet.has(end + 1) ||
                 this.generateCellSet.has(end + 2)
-                // this.generateCellSet.has(start) ||
-                // this.generateCellSet.has(start - 1) ||
-                // this.generateCellSet.has(start - 2) ||
-                // this.generateCellSet.has(start + 1) ||
-                // this.generateCellSet.has(start + 2)
             ) {
                 end = randomRangeInt(30, 99);
             }
@@ -194,7 +189,7 @@ export class board extends Component {
             console.log("snakeStartCellNode", snakeStartCellNode.getWorldPosition());
             console.log("snake end", end);
             console.log("snake end cell node", snakeEndCellNode.getWorldPosition());
-            // this.snakes.push({ start, end });
+
             let dx = snakeEndCellNode.getWorldPosition().x - snakeStartCellNode.getWorldPosition().x;
             let dy = snakeEndCellNode.getWorldPosition().y - snakeStartCellNode.getWorldPosition().y;
             let diagonalDistance = Math.sqrt(dx * dx + dy * dy);
@@ -323,6 +318,7 @@ export class board extends Component {
             let remainingStep = diceNumber - frontStep;
             let finalStep = 100 - remainingStep;
             let finalNode = this.cellMap.get(finalStep.toString());
+            this.currPlayer = nextPlayer;
             tween(this.player1Gotti)
                 .to(1, { position: this.cellMap.get("100").worldPosition }, { easing: "quadInOut" })
                 .to(1, { position: finalNode.getWorldPosition() }, { easing: "quadInOut" })
@@ -380,6 +376,7 @@ export class board extends Component {
             let remainingStep = diceNumber - frontStep;
             let finalStep = 100 - remainingStep;
             let finalNode = this.cellMap.get(finalStep.toString());
+            this.currPlayer = nextPlayer;
             tween(this.player2Gotti)
                 .to(1, { position: this.cellMap.get("100").worldPosition }, { easing: "quadInOut" })
                 .to(1, { position: finalNode.getWorldPosition() }, { easing: "quadInOut" })
@@ -387,7 +384,6 @@ export class board extends Component {
                 .start();
 
             this.player2Gotti.setWorldPosition(finalNode.getWorldPosition());
-            this.currPlayer = nextPlayer;
         } else if (this.snakeMap.has(finalPosition)) {
             this.audioSource.clip = this.biteClip;
             this.audioSource.play();
@@ -434,20 +430,27 @@ export class board extends Component {
             return;
         }
         this.canRollDice = false;
-        const newLabel = currLable + 1;
+        let newLabel = currLable + 1;
 
         console.log("player label", newLabel);
-        const newPos = this.cellMap.get(newLabel.toString()).getWorldPosition();
+        let newPos = this.cellMap.get(newLabel.toString()).getWorldPosition();
 
         tween(playerNode)
             .to(
-                1,
+                0.3,
                 {
-                    position: newPos,
+                    position: new Vec3(newPos.x - 35, newPos.y + 15, newPos.z),
                 },
                 {
-                    easing: "quadInOut",
+                    easing: "sineIn",
                 }
+            )
+            .to(
+                0.3,
+                {
+                    position: new Vec3(newPos.x, newPos.y, newPos.z),
+                },
+                { easing: "sineOut" }
             )
             .call(() => {
                 this.audioSource.play();
