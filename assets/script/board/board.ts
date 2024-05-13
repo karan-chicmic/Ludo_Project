@@ -5,6 +5,7 @@ import {
     AudioSourceComponent,
     color,
     Component,
+    easing,
     EditBoxComponent,
     instantiate,
     Label,
@@ -32,6 +33,7 @@ export class board extends Component {
     ladderMap: Map<number, number> = new Map<number, number>();
     generateCellSet: Set<number> = new Set<number>();
     currPlayer = Player.Player1;
+    canRollDice = true;
 
     firstStart: boolean = false;
     secondStart: boolean = false;
@@ -250,59 +252,66 @@ export class board extends Component {
     }
 
     rollDice() {
-        this.diceImage.getComponent(dice).generateDiceNumber();
-        let diceNumber = this.diceImage.getComponent(dice).getDiceNumber();
-        console.log(diceNumber);
-        if (!(diceNumber == 6) && this.currPlayer == Player.Player1 && !this.firstStart) {
-            this.currPlayer = Player.Player2;
-        } else if (diceNumber == 6 && this.currPlayer == Player.Player1 && this.firstStart) {
-            this.player1BeforeSixCell = this.player1CurrLabel;
-            this.player1sixes = this.player1sixes + 1;
-            if (this.player1sixes == 3) {
-                this.player1Gotti.setPosition(this.cellMap.get(this.player1BeforeSixCell).getWorldPosition());
+        if (this.canRollDice) {
+            this.diceImage.getComponent(dice).generateDiceNumber();
+            let diceNumber = this.diceImage.getComponent(dice).getDiceNumber();
+            console.log(diceNumber);
+            if (!(diceNumber == 6) && this.currPlayer == Player.Player1 && !this.firstStart) {
+                this.currPlayer = Player.Player2;
+            } else if (diceNumber == 6 && this.currPlayer == Player.Player1 && this.firstStart) {
+                this.player1BeforeSixCell = this.player1CurrLabel;
+                this.player1sixes = this.player1sixes + 1;
+                if (this.player1sixes == 3) {
+                    this.player1Gotti.setPosition(this.cellMap.get(this.player1BeforeSixCell).getWorldPosition());
+                }
+                this.player1sixes = 0;
+                this.player1Turn(diceNumber, Player.Player1);
+            } else if (diceNumber == 6 && this.currPlayer == Player.Player2 && this.secondStart) {
+                this.player2BeforeSixCell = this.player2CurrLabel;
+                this.player2sixes = this.player2sixes + 1;
+                if (this.player2sixes == 3) {
+                    this.player2Gotti.setPosition(this.cellMap.get(this.player2BeforeSixCell).getWorldPosition());
+                }
+                this.player2sixes = 0;
+                this.player2Turn(diceNumber, Player.Player2);
+            } else if (!(diceNumber == 6) && this.currPlayer == Player.Player2 && !this.secondStart) {
+                this.currPlayer = Player.Player1;
+            } else if (diceNumber == 6 && this.currPlayer == Player.Player1 && !this.firstStart) {
+                this.firstStart = true;
+                this.player1CurrLabel = 1;
+                console.log("player 1 first 6", this.cellMap.get("1").getWorldPosition());
+                this.audioSource.clip = this.startPlayClip;
+                this.audioSource.play();
+                this.player1Gotti.setPosition(this.cellMap.get("1").getWorldPosition());
+                this.game.addChild(this.player1Gotti);
+                this.currPlayer = Player.Player2;
+            } else if (diceNumber == 6 && this.currPlayer == Player.Player2 && !this.secondStart) {
+                this.secondStart = true;
+                this.player2CurrLabel = 1;
+                console.log("player 2 first 6", this.cellMap.get("1").getWorldPosition());
+                this.audioSource.clip = this.startPlayClip;
+                this.audioSource.play();
+                this.player2Gotti.setPosition(this.cellMap.get("1").getWorldPosition());
+                this.game.addChild(this.player2Gotti);
+                this.currPlayer = Player.Player1;
+            } else if (this.firstStart && this.currPlayer == Player.Player1) {
+                this.player1Turn(diceNumber, Player.Player2);
+            } else if (this.secondStart && this.currPlayer == Player.Player2) {
+                this.player2Turn(diceNumber, Player.Player1);
             }
-            this.player1sixes = 0;
-            this.player1Turn(diceNumber, Player.Player1);
-        } else if (diceNumber == 6 && this.currPlayer == Player.Player2 && this.secondStart) {
-            this.player2BeforeSixCell = this.player2CurrLabel;
-            this.player2sixes = this.player2sixes + 1;
-            if (this.player2sixes == 3) {
-                this.player2Gotti.setPosition(this.cellMap.get(this.player2BeforeSixCell).getWorldPosition());
-            }
-            this.player2sixes = 0;
-            this.player2Turn(diceNumber, Player.Player2);
-        } else if (!(diceNumber == 6) && this.currPlayer == Player.Player2 && !this.secondStart) {
-            this.currPlayer = Player.Player1;
-        } else if (diceNumber == 6 && this.currPlayer == Player.Player1 && !this.firstStart) {
-            this.firstStart = true;
-            this.player1CurrLabel = 1;
-            console.log("player 1 first 6", this.cellMap.get("1").getWorldPosition());
-            this.audioSource.clip = this.startPlayClip;
-            this.audioSource.play();
-            this.player1Gotti.setPosition(this.cellMap.get("1").getWorldPosition());
-            this.game.addChild(this.player1Gotti);
-            this.currPlayer = Player.Player2;
-        } else if (diceNumber == 6 && this.currPlayer == Player.Player2 && !this.secondStart) {
-            this.secondStart = true;
-            this.player2CurrLabel = 1;
-            console.log("player 2 first 6", this.cellMap.get("1").getWorldPosition());
-            this.audioSource.clip = this.startPlayClip;
-            this.audioSource.play();
-            this.player2Gotti.setPosition(this.cellMap.get("1").getWorldPosition());
-            this.game.addChild(this.player2Gotti);
-            this.currPlayer = Player.Player1;
-        } else if (this.firstStart && this.currPlayer == Player.Player1) {
-            this.player1Turn(diceNumber, Player.Player2);
-        } else if (this.secondStart && this.currPlayer == Player.Player2) {
-            this.player2Turn(diceNumber, Player.Player1);
+        } else {
+            console.log("wait for your turn");
         }
     }
 
     player1Turn(diceNumber: number, nextPlayer) {
         let finalPosition = this.player1CurrLabel + diceNumber;
-        if (diceNumber == 100) {
+        if (finalPosition == 100) {
             console.log("player 1 win");
             this.audioSource.clip = this.winClip;
+            tween(this.player1Gotti)
+                .to(1, { position: this.cellMap.get("100").getWorldPosition() }, { easing: "quadInOut" })
+                .start();
             this.audioSource.play();
             //here i will also play win audio
         } else if (finalPosition > 100) {
@@ -310,6 +319,10 @@ export class board extends Component {
             let remainingStep = diceNumber - frontStep;
             let finalStep = 100 - remainingStep;
             let finalNode = this.cellMap.get(finalStep.toString());
+            tween(this.player1Gotti)
+                .to(1, { position: this.cellMap.get("100").worldPosition }, { easing: "quadInOut" })
+                .to(1, { position: finalNode.getWorldPosition() }, { easing: "quadInOut" })
+                .start();
         } else if (this.snakeMap.has(finalPosition)) {
             this.audioSource.clip = this.biteClip;
             this.audioSource.play();
@@ -319,6 +332,7 @@ export class board extends Component {
             this.movePlayer(this.player1CurrLabel, this.player1Gotti, diceNumber, finalPosition, () => {
                 this.player1Gotti.setWorldPosition(snakeStartPosition);
             });
+            this.audioSource.clip = this.jumpClip;
             this.player1CurrLabel = snakestartNumber;
             this.currPlayer = nextPlayer;
         } else if (this.ladderMap.has(finalPosition)) {
@@ -331,6 +345,7 @@ export class board extends Component {
                 this.player1Gotti.setWorldPosition(ladderEndPosition);
                 this.currPlayer = nextPlayer;
             });
+            this.audioSource.clip = this.jumpClip;
 
             this.player1CurrLabel = ladderEndNumber;
             this.currPlayer = nextPlayer;
@@ -344,16 +359,23 @@ export class board extends Component {
 
     player2Turn(diceNumber: number, nextPlayer) {
         let finalPosition = this.player2CurrLabel + diceNumber;
-        if (diceNumber == 100) {
+        if (finalPosition == 100) {
             console.log("player 2 win");
             //here i will also play win audio
             this.audioSource.clip = this.winClip;
+            tween(this.player2Gotti)
+                .to(1, { position: this.cellMap.get("100").getWorldPosition() }, { easing: "quadInOut" })
+                .start();
             this.audioSource.play();
         } else if (finalPosition > 100) {
             let frontStep = 100 - this.player1CurrLabel;
             let remainingStep = diceNumber - frontStep;
             let finalStep = 100 - remainingStep;
             let finalNode = this.cellMap.get(finalStep.toString());
+            tween(this.player2Gotti)
+                .to(1, { position: this.cellMap.get("100").worldPosition }, { easing: "quadInOut" })
+                .to(1, { position: finalNode.getWorldPosition() }, { easing: "quadInOut" })
+                .start();
 
             this.player2Gotti.setWorldPosition(finalNode.getWorldPosition());
             this.currPlayer = nextPlayer;
@@ -366,6 +388,7 @@ export class board extends Component {
             this.movePlayer(this.player2CurrLabel, this.player2Gotti, diceNumber, finalPosition, () => {
                 this.player2Gotti.setWorldPosition(snakeStartPosition);
             });
+            this.audioSource.clip = this.jumpClip;
 
             this.player2CurrLabel = snakestartNumber;
             this.currPlayer = nextPlayer;
@@ -378,6 +401,7 @@ export class board extends Component {
             this.movePlayer(this.player2CurrLabel, this.player2Gotti, diceNumber, finalPosition, () => {
                 this.player2Gotti.setWorldPosition(ladderEndPosition);
             });
+            this.audioSource.clip = this.jumpClip;
             this.player2CurrLabel = ladderEndNumber;
             this.currPlayer = nextPlayer;
         } else {
@@ -397,9 +421,10 @@ export class board extends Component {
     ) {
         if (remainingMoves <= 0) {
             callback();
+            this.canRollDice = true;
             return;
         }
-
+        this.canRollDice = false;
         const newLabel = currLable + 1;
 
         console.log("player label", newLabel);
