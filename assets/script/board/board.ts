@@ -174,6 +174,11 @@ export class board extends Component {
                 this.generateCellSet.has(end - 2) ||
                 this.generateCellSet.has(end + 1) ||
                 this.generateCellSet.has(end + 2)
+                // this.generateCellSet.has(start) ||
+                // this.generateCellSet.has(start - 1) ||
+                // this.generateCellSet.has(start - 2) ||
+                // this.generateCellSet.has(start + 1) ||
+                // this.generateCellSet.has(start + 2)
             ) {
                 end = randomRangeInt(30, 99);
             }
@@ -186,20 +191,16 @@ export class board extends Component {
             console.log("snakeStartCellNode", snakeStartCellNode.getWorldPosition());
             console.log("snake end", end);
             console.log("snake end cell node", snakeEndCellNode.getWorldPosition());
-
             // this.snakes.push({ start, end });
             let dx = snakeEndCellNode.getWorldPosition().x - snakeStartCellNode.getWorldPosition().x;
             let dy = snakeEndCellNode.getWorldPosition().y - snakeStartCellNode.getWorldPosition().y;
             let diagonalDistance = Math.sqrt(dx * dx + dy * dy);
-            snake.getComponent(UITransform).height = diagonalDistance;
+            snake.getComponent(customizeSingleSnake).setSnake(93, diagonalDistance);
+            snake.setWorldPosition(snakeStartCellNode.getWorldPosition());
 
             let angleRadians = Math.atan2(dy, dx);
             let angleDegrees = angleRadians * (180 / Math.PI);
             snake.eulerAngles = new Vec3(0, 0, -(90 - angleDegrees));
-
-            snake.getComponent(customizeSingleSnake).setSnake(93, diagonalDistance);
-            snake.setWorldPosition(snakeStartCellNode.getWorldPosition());
-
             this.game.addChild(snake);
         }
     }
