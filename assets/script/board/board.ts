@@ -130,7 +130,7 @@ export class board extends Component {
     update(deltaTime: number) {
         if (this.currPlayer == Player.Player1) {
             this.currPlayerLabel.string = "Player 1 Turn";
-            this.diceImage.getComponent(Sprite).color = color(0, 136, 243);
+            this.diceImage.getComponent(Sprite).color = color(15, 175, 15);
         } else {
             this.currPlayerLabel.string = "Player 2 Turn";
             this.diceImage.getComponent(Sprite).color = color(250, 0, 0);
@@ -140,6 +140,7 @@ export class board extends Component {
         if (this.snakeEditBox.string == "" || this.ladderEditBox.string == "") {
             this.errorLabel.string = "Enter Both Fields";
         } else {
+            this.game.active = true;
             let totalBoardHeight = this.findEvenMultiple(100, this.designResolution.height);
 
             this.board.getComponent(UITransform).width = totalBoardHeight;
@@ -173,20 +174,13 @@ export class board extends Component {
         this.board.getComponent(Layout).updateLayout();
         for (let i = 0; i < numSnakes; i++) {
             let start = randomRangeInt(3, 80);
+
             while (this.generateCellSet.has(start)) {
                 start = randomRangeInt(3, 80);
             }
             this.generateCellSet.add(start);
             let end = randomRangeInt(30, 99);
-            while (
-                end <= start ||
-                end - start < 20 ||
-                this.generateCellSet.has(end) ||
-                this.generateCellSet.has(end - 1) ||
-                this.generateCellSet.has(end - 2) ||
-                this.generateCellSet.has(end + 1) ||
-                this.generateCellSet.has(end + 2)
-            ) {
+            while (end <= start || end - start < 20 || this.generateCellSet.has(end)) {
                 end = randomRangeInt(30, 99);
             }
             this.generateCellSet.add(end);
@@ -216,13 +210,7 @@ export class board extends Component {
         for (let i = 0; i < numLadders; i++) {
             let ladder = instantiate(this.ladderPrefab);
             let start = randomRangeInt(3, 80);
-            while (
-                this.generateCellSet.has(start) ||
-                this.generateCellSet.has(start - 1) ||
-                this.generateCellSet.has(start - 2) ||
-                this.generateCellSet.has(start + 1) ||
-                this.generateCellSet.has(start + 2)
-            ) {
+            while (this.generateCellSet.has(start)) {
                 start = randomRangeInt(10, 80);
             }
             this.generateCellSet.add(start);
@@ -340,7 +328,11 @@ export class board extends Component {
             let snakeStartNode = this.cellMap.get(snakestartNumber.toString());
             let snakeStartPosition = snakeStartNode.getWorldPosition();
             this.movePlayer(this.player1CurrLabel, this.player1Gotti, diceNumber, finalPosition, () => {
-                this.player1Gotti.setWorldPosition(snakeStartPosition);
+                // this.player1Gotti.setWorldPosition(snakeStartPosition);
+                tween(this.player1Gotti)
+                    .to(1, { position: snakeStartPosition }, { easing: "quadInOut" })
+                    .call(() => (this.currPlayer = nextPlayer))
+                    .start();
             });
             this.audioSource.clip = this.jumpClip;
             this.player1CurrLabel = snakestartNumber;
@@ -352,8 +344,12 @@ export class board extends Component {
             let ladderEndNode = this.cellMap.get(ladderEndNumber.toString());
             let ladderEndPosition = ladderEndNode.getWorldPosition();
             this.movePlayer(this.player1CurrLabel, this.player1Gotti, diceNumber, finalPosition, () => {
-                this.player1Gotti.setWorldPosition(ladderEndPosition);
-                this.currPlayer = nextPlayer;
+                // this.player1Gotti.setWorldPosition(ladderEndPosition);
+                // this.currPlayer = nextPlayer;
+                tween(this.player1Gotti)
+                    .to(1, { position: ladderEndPosition }, { easing: "quadInOut" })
+                    .call(() => (this.currPlayer = nextPlayer))
+                    .start();
             });
             this.audioSource.clip = this.jumpClip;
 
@@ -400,7 +396,11 @@ export class board extends Component {
             let snakeStartNode = this.cellMap.get(snakestartNumber.toString());
             let snakeStartPosition = snakeStartNode.getWorldPosition();
             this.movePlayer(this.player2CurrLabel, this.player2Gotti, diceNumber, finalPosition, () => {
-                this.player2Gotti.setWorldPosition(snakeStartPosition);
+                // this.player2Gotti.setWorldPosition(snakeStartPosition);
+                tween(this.player2Gotti)
+                    .to(1, { position: snakeStartPosition }, { easing: "quadInOut" })
+                    .call(() => (this.currPlayer = nextPlayer))
+                    .start();
             });
             this.audioSource.clip = this.jumpClip;
 
@@ -413,7 +413,11 @@ export class board extends Component {
             let ladderEndNode = this.cellMap.get(ladderEndNumber.toString());
             let ladderEndPosition = ladderEndNode.getWorldPosition();
             this.movePlayer(this.player2CurrLabel, this.player2Gotti, diceNumber, finalPosition, () => {
-                this.player2Gotti.setWorldPosition(ladderEndPosition);
+                // this.player2Gotti.setWorldPosition(ladderEndPosition);
+                tween(this.player2Gotti)
+                    .to(1, { position: ladderEndPosition }, { easing: "quadInOut" })
+                    .call(() => (this.currPlayer = nextPlayer))
+                    .start();
             });
             this.audioSource.clip = this.jumpClip;
             this.player2CurrLabel = ladderEndNumber;
