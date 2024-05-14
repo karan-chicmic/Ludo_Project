@@ -173,8 +173,8 @@ export class board extends Component {
     generateSnakes(numSnakes: number) {
         this.board.getComponent(Layout).updateLayout();
         for (let i = 0; i < numSnakes; i++) {
-            let start;
-            let end;
+            let start: number;
+            let end: number;
 
             do {
                 start = randomRangeInt(1, 101);
@@ -312,24 +312,14 @@ export class board extends Component {
         } else if (finalPosition > 100) {
             let frontStep = 100 - this.player1CurrLabel;
             let remainingStep = diceNumber - frontStep;
-            let finalStep = 100 - remainingStep;
-            let finalNode = this.cellMap.get(finalStep.toString());
+            let backStep = 100 - remainingStep;
+
             this.currPlayer = nextPlayer;
-            this.movePlayer(this.player1CurrLabel, this.player1Gotti, frontStep, finalPosition, () => {
-                this.reverseMovePlayer(100, this.player1Gotti, remainingStep, finalPosition, () => {
-                    this.player1CurrLabel = finalStep;
-                    if (this.checkSnake(this.player1CurrLabel)) {
-                        let snakestartNumber = this.snakeMap.get(finalPosition);
-                        this.bite(this.player1CurrLabel, this.player1Gotti, finalPosition, diceNumber, nextPlayer);
-                        this.player1CurrLabel = snakestartNumber;
-                    }
-                    if (this.checkLadder(this.player1CurrLabel)) {
-                        let ladderEndNumber = this.ladderMap.get(finalPosition);
-                        this.climb(this.player1CurrLabel, this.player1Gotti, finalPosition, diceNumber, nextPlayer);
-                        this.player1CurrLabel = ladderEndNumber;
-                    }
-                });
-            });
+            this.player1CurrLabel = backStep;
+            tween(this.player1Gotti)
+                .to(1, { position: this.cellMap.get("100").getWorldPosition() })
+                .to(2, { position: this.cellMap.get(backStep.toString()).getWorldPosition() })
+                .start();
         } else if (this.checkSnake(finalPosition)) {
             let snakestartNumber = this.snakeMap.get(finalPosition);
             this.bite(this.player1CurrLabel, this.player1Gotti, finalPosition, diceNumber, nextPlayer);
@@ -339,7 +329,7 @@ export class board extends Component {
             this.climb(this.player1CurrLabel, this.player1Gotti, finalPosition, diceNumber, nextPlayer);
             this.player1CurrLabel = ladderEndNumber;
         } else {
-            this.movePlayer(this.player1CurrLabel, this.player1Gotti, diceNumber, finalPosition, () => {
+            this.movePlayer(this.player1CurrLabel, this.player1Gotti, diceNumber, () => {
                 this.currPlayer = nextPlayer;
             });
             this.player1CurrLabel = finalPosition;
@@ -353,26 +343,14 @@ export class board extends Component {
         } else if (finalPosition > 100) {
             let frontStep = 100 - this.player2CurrLabel;
             let remainingStep = diceNumber - frontStep;
-            let finalStep = 100 - remainingStep;
-            let finalNode = this.cellMap.get(finalStep.toString());
-            this.currPlayer = nextPlayer;
-            this.movePlayer(this.player1CurrLabel, this.player1Gotti, frontStep, finalPosition, () => {
-                this.reverseMovePlayer(100, this.player2Gotti, remainingStep, finalPosition, () => {
-                    this.player2CurrLabel = finalStep;
-                    if (this.checkSnake(this.player2CurrLabel)) {
-                        let snakestartNumber = this.snakeMap.get(finalPosition);
-                        this.bite(this.player2CurrLabel, this.player2Gotti, finalPosition, diceNumber, nextPlayer);
-                        this.player2CurrLabel = snakestartNumber;
-                    }
-                    if (this.checkLadder(this.player2CurrLabel)) {
-                        let ladderEndNumber = this.ladderMap.get(finalPosition);
-                        this.climb(this.player2CurrLabel, this.player2Gotti, finalPosition, diceNumber, nextPlayer);
-                        this.player2CurrLabel = ladderEndNumber;
-                    }
-                });
-            });
+            let backStep = 100 - remainingStep;
 
-            this.player2Gotti.setWorldPosition(finalNode.getWorldPosition());
+            this.currPlayer = nextPlayer;
+            this.player2CurrLabel = backStep;
+            tween(this.player2Gotti)
+                .to(1, { position: this.cellMap.get("100").getWorldPosition() })
+                .to(2, { position: this.cellMap.get(backStep.toString()).getWorldPosition() })
+                .start();
         } else if (this.checkSnake(finalPosition)) {
             let snakestartNumber = this.snakeMap.get(finalPosition);
             this.bite(this.player2CurrLabel, this.player2Gotti, finalPosition, diceNumber, nextPlayer);
@@ -382,58 +360,18 @@ export class board extends Component {
             this.climb(this.player2CurrLabel, this.player2Gotti, finalPosition, diceNumber, nextPlayer);
             this.player2CurrLabel = ladderEndNumber;
         } else {
-            this.movePlayer(this.player2CurrLabel, this.player2Gotti, diceNumber, finalPosition, () => {
+            this.movePlayer(this.player2CurrLabel, this.player2Gotti, diceNumber, () => {
                 this.currPlayer = nextPlayer;
             });
             this.player2CurrLabel = finalPosition;
         }
     }
 
-    reverseMovePlayer(
-        currLable: number,
-        playerNode: Node,
-        remainingMoves: number,
-        finalPosition: number,
-        callback: () => void
-    ) {
-        if (remainingMoves <= 0) {
-            callback();
-            this.canRollDice = true;
-            return;
-        }
-        this.canRollDice = false;
-        let newLabel = currLable - 1;
-
-        console.log("player label", newLabel);
-        let newPos = this.cellMap.get(newLabel.toString()).getWorldPosition();
-        tween(playerNode)
-            .to(
-                0.3,
-                {
-                    position: new Vec3(newPos.x - 35, newPos.y + 15, newPos.z),
-                },
-                {
-                    easing: "quadInOut",
-                }
-            )
-            .to(
-                0.3,
-                {
-                    position: new Vec3(newPos.x, newPos.y, newPos.z),
-                },
-                { easing: "quadInOut" }
-            )
-            .call(() => {
-                this.audioSource.play();
-                this.movePlayer(currLable - 1, playerNode, remainingMoves - 1, finalPosition, callback);
-            })
-            .start();
-    }
     movePlayer(
         currLable: number,
         playerNode: Node,
         remainingMoves: number,
-        finalPosition: number,
+        // finalPosition: number,
         callback: () => void
     ) {
         if (remainingMoves <= 0) {
@@ -471,8 +409,9 @@ export class board extends Component {
             )
             .call(() => {
                 this.audioSource.play();
-                this.movePlayer(currLable + 1, playerNode, remainingMoves - 1, finalPosition, callback);
+                this.movePlayer(currLable + 1, playerNode, remainingMoves - 1, callback);
             })
+
             .start();
     }
 
@@ -524,7 +463,7 @@ export class board extends Component {
         let snakestartNumber = this.snakeMap.get(finalPosition);
         let snakeStartNode = this.cellMap.get(snakestartNumber.toString());
         let snakeStartPosition = snakeStartNode.getWorldPosition();
-        this.movePlayer(currLable, currGotti, diceNumber, finalPosition, () => {
+        this.movePlayer(currLable, currGotti, diceNumber, () => {
             this.playTween(currGotti, snakeStartPosition, nextPlayer);
         });
         this.audioSource.clip = this.jumpClip;
@@ -538,12 +477,52 @@ export class board extends Component {
         let ladderEndNumber = this.ladderMap.get(finalPosition);
         let ladderEndNode = this.cellMap.get(ladderEndNumber.toString());
         let ladderEndPosition = ladderEndNode.getWorldPosition();
-        this.movePlayer(currLable, currGotti, diceNumber, finalPosition, () => {
+        this.movePlayer(currLable, currGotti, diceNumber, () => {
             this.playTween(currGotti, ladderEndPosition, nextPlayer);
         });
         this.audioSource.clip = this.jumpClip;
 
         currLable = ladderEndNumber;
         this.currPlayer = nextPlayer;
+    }
+
+    backAndFrothAnimation(currPlayerLabel, currPlayerGotti, frontStep, backStep, nextPlayer) {
+        // let frontStep = 100 - this.player2CurrLabel;
+        // let remainingStep = diceNumber - frontStep;
+        //  backStep = 100 - remainingStep;
+
+        this.currPlayer = nextPlayer;
+        currPlayerLabel = backStep;
+        this.frontAnimation(currPlayerLabel, currPlayerGotti, frontStep)
+
+        this.movePlayer(currPlayerLabel, currPlayerGotti, frontStep, () => {
+            this.currPlayer = nextPlayer;
+        });
+        tween(this.player2Gotti)
+            .to(1, { position: this.cellMap.get("100").getWorldPosition() })
+            .to(2, { position: this.cellMap.get(backStep.toString()).getWorldPosition() })
+            .start();
+    }
+    frontAnimation(currLable, playerNode, remainingMoves) {
+        if (remainingMoves <= 0) {
+            return;
+        }
+        currLable = currLable + 1;
+        let newPos = this.cellMap.get(currLable).getWorldPosition();
+        tween(playerNode)
+            .to(1, { position: newPos })
+            .call(() => this.frontAnimation(currLable, playerNode, remainingMoves - 1))
+            .start();
+    }
+    backAnimation(currLable, playerNode, remainingMoves) {
+        if (remainingMoves <= 0) {
+            return;
+        }
+        currLable = currLable - 1;
+        let newPos = this.cellMap.get(currLable).getWorldPosition();
+        tween(playerNode)
+            .to(1, { position: newPos })
+            .call(() => this.backAnimation(currLable, playerNode, remainingMoves - 1))
+            .start();
     }
 }
