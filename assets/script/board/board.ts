@@ -299,62 +299,37 @@ export class board extends Component {
 
     player1Turn(diceNumber: number, nextPlayer) {
         let finalPosition = this.player1CurrLabel + diceNumber;
-        if (finalPosition == 100) {
-            console.log("player 1 win");
-            this.audioSource.clip = this.winClip;
-            tween(this.player1Gotti)
-                .to(1, { position: this.cellMap.get("100").getWorldPosition() }, { easing: "quadInOut" })
-                .call(() => {
-                    director.loadScene("win");
-                })
-                .start();
-            this.audioSource.play();
-            //here i will also play win audio
+        if (this.finalCell(finalPosition)) {
+            this.finalCellFunction(this.player1Gotti, this.currPlayer);
         } else if (finalPosition > 100) {
             let frontStep = 100 - this.player1CurrLabel;
             let remainingStep = diceNumber - frontStep;
             let finalStep = 100 - remainingStep;
             let finalNode = this.cellMap.get(finalStep.toString());
             this.currPlayer = nextPlayer;
-            tween(this.player1Gotti)
-                .to(1, { position: this.cellMap.get("100").worldPosition }, { easing: "quadInOut" })
-                .to(1, { position: finalNode.getWorldPosition() }, { easing: "quadInOut" })
-                .call(() => this.audioSource.play())
-                .start();
-        } else if (this.snakeMap.has(finalPosition)) {
-            this.audioSource.clip = this.biteClip;
-            this.audioSource.play();
+            this.movePlayer(this.player1CurrLabel, this.player1Gotti, frontStep, finalPosition, () => {
+                // tween(this.player1Gotti).to(1, { position: finalNode.getWorldPosition() }).start();
+                this.reverseMovePlayer(100, this.player1Gotti, remainingStep, finalPosition, () => {
+                    if (this.checkSnake(finalStep)) {
+                        let snakestartNumber = this.snakeMap.get(finalPosition);
+                        this.bite(this.player1CurrLabel, this.player1Gotti, finalPosition, diceNumber, nextPlayer);
+                        this.player1CurrLabel = snakestartNumber;
+                    }
+                    if (this.checkLadder(finalPosition)) {
+                        let ladderEndNumber = this.ladderMap.get(finalPosition);
+                        this.climb(this.player1CurrLabel, this.player1Gotti, finalPosition, diceNumber, nextPlayer);
+                        this.player1CurrLabel = ladderEndNumber;
+                    }
+                });
+            });
+        } else if (this.checkSnake(finalPosition)) {
             let snakestartNumber = this.snakeMap.get(finalPosition);
-            let snakeStartNode = this.cellMap.get(snakestartNumber.toString());
-            let snakeStartPosition = snakeStartNode.getWorldPosition();
-            this.movePlayer(this.player1CurrLabel, this.player1Gotti, diceNumber, finalPosition, () => {
-                // this.player1Gotti.setWorldPosition(snakeStartPosition);
-                tween(this.player1Gotti)
-                    .to(1, { position: snakeStartPosition }, { easing: "quadInOut" })
-                    .call(() => (this.currPlayer = nextPlayer))
-                    .start();
-            });
-            this.audioSource.clip = this.jumpClip;
+            this.bite(this.player1CurrLabel, this.player1Gotti, finalPosition, diceNumber, nextPlayer);
             this.player1CurrLabel = snakestartNumber;
-            this.currPlayer = nextPlayer;
-        } else if (this.ladderMap.has(finalPosition)) {
-            this.audioSource.clip = this.climbClip;
-            this.audioSource.play();
+        } else if (this.checkLadder(finalPosition)) {
             let ladderEndNumber = this.ladderMap.get(finalPosition);
-            let ladderEndNode = this.cellMap.get(ladderEndNumber.toString());
-            let ladderEndPosition = ladderEndNode.getWorldPosition();
-            this.movePlayer(this.player1CurrLabel, this.player1Gotti, diceNumber, finalPosition, () => {
-                // this.player1Gotti.setWorldPosition(ladderEndPosition);
-                // this.currPlayer = nextPlayer;
-                tween(this.player1Gotti)
-                    .to(1, { position: ladderEndPosition }, { easing: "quadInOut" })
-                    .call(() => (this.currPlayer = nextPlayer))
-                    .start();
-            });
-            this.audioSource.clip = this.jumpClip;
-
+            this.climb(this.player1CurrLabel, this.player1Gotti, finalPosition, diceNumber, nextPlayer);
             this.player1CurrLabel = ladderEndNumber;
-            this.currPlayer = nextPlayer;
         } else {
             this.movePlayer(this.player1CurrLabel, this.player1Gotti, diceNumber, finalPosition, () => {
                 this.currPlayer = nextPlayer;
@@ -363,65 +338,40 @@ export class board extends Component {
         }
     }
 
-    player2Turn(diceNumber: number, nextPlayer) {
+    player2Turn(diceNumber: number, nextPlayer: string) {
         let finalPosition = this.player2CurrLabel + diceNumber;
-        if (finalPosition == 100) {
-            console.log("player 2 win");
-            //here i will also play win audio
-            this.audioSource.clip = this.winClip;
-            tween(this.player2Gotti)
-                .to(1, { position: this.cellMap.get("100").getWorldPosition() }, { easing: "quadInOut" })
-                .call(() => {
-                    director.loadScene("win");
-                })
-                .start();
-            this.audioSource.play();
+        if (this.finalCell(finalPosition)) {
+            this.finalCellFunction(this.player2Gotti, this.currPlayer);
         } else if (finalPosition > 100) {
-            let frontStep = 100 - this.player1CurrLabel;
+            let frontStep = 100 - this.player2CurrLabel;
             let remainingStep = diceNumber - frontStep;
             let finalStep = 100 - remainingStep;
             let finalNode = this.cellMap.get(finalStep.toString());
             this.currPlayer = nextPlayer;
-            tween(this.player2Gotti)
-                .to(1, { position: this.cellMap.get("100").worldPosition }, { easing: "quadInOut" })
-                .to(1, { position: finalNode.getWorldPosition() }, { easing: "quadInOut" })
-                .call(() => this.audioSource.play())
-                .start();
+            this.movePlayer(this.player2CurrLabel, this.player2Gotti, frontStep, finalPosition, () => {
+                this.reverseMovePlayer(this.player2CurrLabel, this.player2Gotti, remainingStep, finalPosition, () => {
+                    if (this.checkSnake(finalPosition)) {
+                        let snakestartNumber = this.snakeMap.get(finalPosition);
+                        this.bite(this.player2CurrLabel, this.player2Gotti, finalPosition, diceNumber, nextPlayer);
+                        this.player2CurrLabel = snakestartNumber;
+                    }
+                    if (this.checkLadder(finalPosition)) {
+                        let ladderEndNumber = this.ladderMap.get(finalPosition);
+                        this.climb(this.player2CurrLabel, this.player2Gotti, finalPosition, diceNumber, nextPlayer);
+                        this.player2CurrLabel = ladderEndNumber;
+                    }
+                });
+            });
 
             this.player2Gotti.setWorldPosition(finalNode.getWorldPosition());
-        } else if (this.snakeMap.has(finalPosition)) {
-            this.audioSource.clip = this.biteClip;
-            this.audioSource.play();
+        } else if (this.checkSnake(finalPosition)) {
             let snakestartNumber = this.snakeMap.get(finalPosition);
-            let snakeStartNode = this.cellMap.get(snakestartNumber.toString());
-            let snakeStartPosition = snakeStartNode.getWorldPosition();
-            this.movePlayer(this.player2CurrLabel, this.player2Gotti, diceNumber, finalPosition, () => {
-                // this.player2Gotti.setWorldPosition(snakeStartPosition);
-                tween(this.player2Gotti)
-                    .to(1, { position: snakeStartPosition }, { easing: "quadInOut" })
-                    .call(() => (this.currPlayer = nextPlayer))
-                    .start();
-            });
-            this.audioSource.clip = this.jumpClip;
-
+            this.bite(this.player2CurrLabel, this.player2Gotti, finalPosition, diceNumber, nextPlayer);
             this.player2CurrLabel = snakestartNumber;
-            this.currPlayer = nextPlayer;
-        } else if (this.ladderMap.has(finalPosition)) {
-            this.audioSource.clip = this.climbClip;
-            this.audioSource.play();
+        } else if (this.checkLadder(finalPosition)) {
             let ladderEndNumber = this.ladderMap.get(finalPosition);
-            let ladderEndNode = this.cellMap.get(ladderEndNumber.toString());
-            let ladderEndPosition = ladderEndNode.getWorldPosition();
-            this.movePlayer(this.player2CurrLabel, this.player2Gotti, diceNumber, finalPosition, () => {
-                // this.player2Gotti.setWorldPosition(ladderEndPosition);
-                tween(this.player2Gotti)
-                    .to(1, { position: ladderEndPosition }, { easing: "quadInOut" })
-                    .call(() => (this.currPlayer = nextPlayer))
-                    .start();
-            });
-            this.audioSource.clip = this.jumpClip;
+            this.climb(this.player2CurrLabel, this.player2Gotti, finalPosition, diceNumber, nextPlayer);
             this.player2CurrLabel = ladderEndNumber;
-            this.currPlayer = nextPlayer;
         } else {
             this.movePlayer(this.player2CurrLabel, this.player2Gotti, diceNumber, finalPosition, () => {
                 this.currPlayer = nextPlayer;
@@ -430,6 +380,48 @@ export class board extends Component {
         }
     }
 
+    reverseMovePlayer(
+        currLable: number,
+        playerNode: Node,
+        remainingMoves: number,
+        finalPosition: number,
+        callback: () => void
+    ) {
+        if (remainingMoves <= 0) {
+            callback();
+            this.canRollDice = true;
+            return;
+        }
+        this.canRollDice = false;
+        let newLabel = currLable - 1;
+
+        console.log("player label", newLabel);
+        let newPos = this.cellMap.get(newLabel.toString()).getWorldPosition();
+        tween(playerNode)
+            .to(
+                0.3,
+                {
+                    // position: new Vec3(newPos.x - 35, newPos.y + 15, newPos.z),
+
+                    position: new Vec3(newPos.x - 35, newPos.y + 15, newPos.z),
+                },
+                {
+                    easing: "sineIn",
+                }
+            )
+            .to(
+                0.3,
+                {
+                    position: new Vec3(newPos.x, newPos.y, newPos.z),
+                },
+                { easing: "sineOut" }
+            )
+            .call(() => {
+                this.audioSource.play();
+                this.movePlayer(currLable - 1, playerNode, remainingMoves - 1, finalPosition, callback);
+            })
+            .start();
+    }
     movePlayer(
         currLable: number,
         playerNode: Node,
@@ -447,13 +439,15 @@ export class board extends Component {
 
         console.log("player label", newLabel);
         let newPos = this.cellMap.get(newLabel.toString()).getWorldPosition();
-
+        let isMultiple = currLable % 10 == 0;
         tween(playerNode)
             .to(
                 0.3,
                 {
                     // position: new Vec3(newPos.x - 35, newPos.y + 15, newPos.z),
-                    position: this.jumpMap.get(currLable.toString())
+                    position: isMultiple
+                        ? new Vec3(newPos.x, newPos.y, newPos.z)
+                        : this.jumpMap.get(currLable.toString())
                         ? new Vec3(newPos.x - 35, newPos.y + 15, newPos.z)
                         : new Vec3(newPos.x + 35, newPos.y + 15, newPos.z),
                 },
@@ -481,5 +475,68 @@ export class board extends Component {
         }
 
         return Math.floor(y / x) * x;
+    }
+
+    playTween(target: Node, newPos: Vec3, nextPlayer: string) {
+        tween(target)
+            .to(1, { position: newPos })
+            .call(() => (this.currPlayer = nextPlayer))
+            .start();
+    }
+
+    finalCell(finalPosition: number) {
+        if (finalPosition == 100) {
+            return true;
+        }
+        return false;
+    }
+
+    checkSnake(position) {
+        if (this.snakeMap.has(position)) return true;
+        return false;
+    }
+    checkLadder(position) {
+        if (this.ladderMap.has(position)) return true;
+        return false;
+    }
+
+    finalCellFunction(currGotti: Node, currPlayer: string) {
+        this.audioSource.clip = this.winClip;
+        tween(currGotti)
+            .to(1, { position: this.cellMap.get("100").getWorldPosition() }, { easing: "quadInOut" })
+            .call(() => {
+                this.audioSource.play();
+                director.loadScene("win");
+            })
+            .start();
+    }
+
+    bite(currLable: number, currGotti: Node, finalPosition: number, diceNumber: number, nextPlayer: string) {
+        this.audioSource.clip = this.biteClip;
+        this.audioSource.play();
+        let snakestartNumber = this.snakeMap.get(finalPosition);
+        let snakeStartNode = this.cellMap.get(snakestartNumber.toString());
+        let snakeStartPosition = snakeStartNode.getWorldPosition();
+        this.movePlayer(currLable, currGotti, diceNumber, finalPosition, () => {
+            this.playTween(currGotti, snakeStartPosition, nextPlayer);
+        });
+        this.audioSource.clip = this.jumpClip;
+
+        currLable = snakestartNumber;
+        this.currPlayer = nextPlayer;
+    }
+    climb(currLable: number, currGotti: Node, finalPosition: number, diceNumber: number, nextPlayer: string) {
+        this.audioSource.clip = this.climbClip;
+        this.audioSource.play();
+        let ladderEndNumber = this.ladderMap.get(finalPosition);
+        let ladderEndNode = this.cellMap.get(ladderEndNumber.toString());
+        let ladderEndPosition = ladderEndNode.getWorldPosition();
+        this.movePlayer(currLable, currGotti, diceNumber, finalPosition, () => {
+            this.playTween(currGotti, ladderEndPosition, nextPlayer);
+        });
+        this.audioSource.clip = this.jumpClip;
+
+        currLable = ladderEndNumber;
+        this.currPlayer = nextPlayer;
     }
 }
