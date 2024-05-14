@@ -18,6 +18,7 @@ import {
     tween,
     UITransform,
     Vec3,
+    view,
 } from "cc";
 import { customizeSingleCell } from "../cell/customizeSingleCell";
 import { dice } from "../dice/dice";
@@ -33,6 +34,7 @@ export class board extends Component {
     snakeMap: Map<number, number> = new Map<number, number>();
     ladderMap: Map<number, number> = new Map<number, number>();
     generateCellSet: Set<number> = new Set<number>();
+    jumpMap: Map<string, boolean> = new Map<string, boolean>();
     currPlayer = Player.Player1;
     canRollDice = true;
 
@@ -101,6 +103,7 @@ export class board extends Component {
 
     player1BeforeSixCell;
     player2BeforeSixCell;
+    designResolution;
 
     @property({ type: AudioClip })
     startPlayClip: AudioClip = null;
@@ -121,6 +124,7 @@ export class board extends Component {
 
     start() {
         this.audioSource = this.node.getComponent(AudioSource);
+        this.designResolution = view.getDesignResolutionSize();
     }
 
     update(deltaTime: number) {
@@ -136,6 +140,9 @@ export class board extends Component {
         if (this.snakeEditBox.string == "" || this.ladderEditBox.string == "") {
             this.errorLabel.string = "Enter Both Fields";
         } else {
+            let totalBoardHeight = this.findEvenMultiple(100, this.designResolution.height);
+
+            this.board.getComponent(UITransform).width = totalBoardHeight;
             console.log("no of snakes", this.snakeEditBox.string, "no of ladders", this.ladderEditBox.string);
             this.inputNode.active = false;
             for (let i = 0; i < 10; i++) {
@@ -143,11 +150,13 @@ export class board extends Component {
 
                 for (let j = 0; j < 10; j++) {
                     let cellnode = instantiate(this.cell);
-                    cellnode.getComponent(customizeSingleCell).setLable(i * 10 + (j + 1));
+
+                    cellnode.getComponent(customizeSingleCell).setLable(i * 10 + (j + 1), i, this.jumpMap);
 
                     row.addChild(cellnode);
                     this.cellMap.set(cellnode.getComponent(customizeSingleCell).getLabel(), cellnode);
                 }
+
                 row.getComponent(Layout).horizontalDirection =
                     i % 2 == 0 ? Layout.HorizontalDirection.LEFT_TO_RIGHT : Layout.HorizontalDirection.RIGHT_TO_LEFT;
                 this.board.addChild(row);
@@ -439,7 +448,10 @@ export class board extends Component {
             .to(
                 0.3,
                 {
-                    position: new Vec3(newPos.x - 35, newPos.y + 15, newPos.z),
+                    // position: new Vec3(newPos.x - 35, newPos.y + 15, newPos.z),
+                    position: this.jumpMap.get(currLable.toString())
+                        ? new Vec3(newPos.x - 35, newPos.y + 15, newPos.z)
+                        : new Vec3(newPos.x + 35, newPos.y + 15, newPos.z),
                 },
                 {
                     easing: "sineIn",

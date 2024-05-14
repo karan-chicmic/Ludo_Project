@@ -19,19 +19,33 @@ export class customizeSingleCell extends Component {
     start() {}
 
     update(deltaTime: number) {}
-    setLable(count: number) {
+    setLable(count: number, i: number, jumpMap: Map<string, boolean>) {
         this.designResolution = view.getDesignResolutionSize();
+        let totalHeight = this.findEvenMultiple(100, this.designResolution.height);
+        let cellHeight = totalHeight / 10;
 
-        this.node.getComponent(UITransform).height = 70;
-        this.node.getComponent(UITransform).width = 70;
+        this.node.getComponent(UITransform).height = cellHeight;
+        this.node.getComponent(UITransform).width = cellHeight;
 
         this.label.string = count.toString();
         this.label.color = count % 2 == 0 ? Color.BLUE : Color.YELLOW;
 
         this.image.spriteFrame = count % 2 == 0 ? this.yellow : this.blue;
+        if (i % 2 == 0) {
+            jumpMap.set(this.label.string, true);
+        } else {
+            jumpMap.set(this.label.string, false);
+        }
     }
 
     getLabel() {
         return this.label.string;
+    }
+    findEvenMultiple(x: number, y: number) {
+        if (y % x === 0) {
+            return y - x;
+        }
+
+        return Math.floor(y / x) * x;
     }
 }
