@@ -173,17 +173,21 @@ export class board extends Component {
     generateSnakes(numSnakes: number) {
         this.board.getComponent(Layout).updateLayout();
         for (let i = 0; i < numSnakes; i++) {
-            let start = randomRangeInt(3, 80);
+            let start;
+            let end;
 
-            while (this.generateCellSet.has(start)) {
-                start = randomRangeInt(3, 80);
-            }
-            this.generateCellSet.add(start);
-            let end = randomRangeInt(30, 99);
-            while (end <= start || end - start < 20 || this.generateCellSet.has(end)) {
-                end = randomRangeInt(30, 99);
-            }
+            do {
+                start = randomRangeInt(1, 101);
+
+                end = randomRangeInt(1, 101);
+                if (end < start) {
+                    let temp = end;
+                    end = start;
+                    start = temp;
+                }
+            } while (this.generateCellSet.has(end) || this.generateCellSet.has(start));
             this.generateCellSet.add(end);
+            this.generateCellSet.add(start);
             let snake = instantiate(this.snakePrefab);
             this.snakeMap.set(end, start);
             let snakeStartCellNode = this.cellMap.get(start.toString());
@@ -208,17 +212,21 @@ export class board extends Component {
     generateLadders(numLadders: number) {
         this.board.getComponent(Layout).updateLayout();
         for (let i = 0; i < numLadders; i++) {
+            let start;
+            let end;
             let ladder = instantiate(this.ladderPrefab);
-            let start = randomRangeInt(3, 80);
-            while (this.generateCellSet.has(start)) {
-                start = randomRangeInt(10, 80);
-            }
-            this.generateCellSet.add(start);
-            let end = randomRangeInt(30, 99);
-            while (end <= start || end - start < 20 || this.generateCellSet.has(end)) {
-                end = randomRangeInt(30, 99);
-            }
+            do {
+                start = randomRangeInt(1, 101);
+
+                end = randomRangeInt(1, 101);
+                if (end < start) {
+                    let temp = end;
+                    end = start;
+                    start = temp;
+                }
+            } while (this.generateCellSet.has(end) || this.generateCellSet.has(start));
             this.generateCellSet.add(end);
+            this.generateCellSet.add(start);
             this.ladderMap.set(start, end);
             let ladderStartCellNode = this.cellMap.get(start.toString());
             let ladderEndCellNode = this.cellMap.get(end.toString());
