@@ -123,6 +123,7 @@ export class board extends Component {
     winClip: AudioClip = null;
 
     audioSource: AudioSource;
+    restartGame = false;
 
     start() {
         this.audioSource = this.node.getComponent(AudioSource);
@@ -130,6 +131,9 @@ export class board extends Component {
     }
 
     update(deltaTime: number) {
+        if (this.restartGame == true) {
+            director.loadScene("main");
+        }
         if (this.currPlayer == Player.Player1) {
             this.currPlayerLabel.string = "Player 1 Turn";
             this.diceImage.getComponent(Sprite).color = color(15, 175, 15);
@@ -138,15 +142,35 @@ export class board extends Component {
             this.diceImage.getComponent(Sprite).color = color(250, 0, 0);
         }
     }
-    generateSnakesAndLadders(boardSize: number, numSnakes: number, numLadders: number, minDifference: number) {
+    generateSnakesAndLadders(
+        boardSize: number,
+        numSnakes: number,
+        numLadders: number,
+        minDifference: number,
+        restartGame: boolean
+    ) {
         const positions = new Set<string>();
         const usedNumbers = new Set<number>();
         const snakes: Array<{ start: number; end: number }> = [];
         const ladders: Array<{ start: number; end: number }> = [];
+        let count = 0;
 
-        function generatePosition(): { start: number; end: number } {
+        function generatePosition(): { start: number; end: number; restartGame: boolean } {
             while (true) {
+                if (numLadders + numSnakes > 49) {
+                    restartGame = true;
+                }
+                count = count + 1;
+                if (count >= 15000) {
+                    alert("cannot generate all possible combinations");
+                    director.loadScene("main");
+                    return;
+                }
                 let start = Math.floor(Math.random() * boardSize) + 1;
+                if (start == 100) {
+                    continue;
+                }
+                // let start = randomRangeInt(0, 99);
                 if (usedNumbers.has(start)) {
                     continue;
                 }
@@ -166,6 +190,9 @@ export class board extends Component {
                     continue;
                 }
                 let end = endOptions[Math.floor(Math.random() * endOptions.length)];
+                if (end == 100) {
+                    continue;
+                }
                 const positionKey = `${start}-${end}`;
                 const reversePositionKey = `${end}-${start}`;
                 if (!positions.has(positionKey) && !positions.has(reversePositionKey)) {
@@ -177,18 +204,26 @@ export class board extends Component {
                         start = end;
                         end = temp;
                     }
-                    return { start, end };
+                    return { start, end, restartGame };
                 }
             }
         }
 
         for (let i = 0; i < numSnakes; i++) {
-            const { start, end } = generatePosition();
+            const { start, end, restartGame } = generatePosition();
+            if (restartGame) {
+                break;
+            }
             snakes.push({ start, end });
         }
 
         for (let i = 0; i < numLadders; i++) {
-            const { start, end } = generatePosition();
+            const { start, end, restartGame } = generatePosition();
+            if (restartGame) {
+                alert("total sum of snake and ladder should not be greater than 49");
+                director.loadScene("main");
+                break;
+            }
             ladders.push({ start, end });
         }
 
@@ -227,7 +262,8 @@ export class board extends Component {
                 100,
                 parseInt(this.snakeEditBox.string),
                 parseInt(this.ladderEditBox.string),
-                10
+                10,
+                this.restartGame
             );
 
             console.log("Snakes:");
