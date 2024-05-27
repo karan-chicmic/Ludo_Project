@@ -37,6 +37,7 @@ export class board extends Component {
     jumpMap: Map<string, boolean> = new Map<string, boolean>();
     currPlayer = Player.Player1;
     canRollDice = true;
+    canCurrPlayerRollDice = true;
 
     firstStart: boolean = false;
     secondStart: boolean = false;
@@ -324,7 +325,7 @@ export class board extends Component {
     }
 
     rollDice() {
-        if (this.canRollDice) {
+        if (this.canRollDice && this.canCurrPlayerRollDice) {
             this.diceImage.getComponent(dice).generateDiceNumber();
             let diceNumber = this.diceImage.getComponent(dice).getDiceNumber();
             console.log(diceNumber);
@@ -385,7 +386,14 @@ export class board extends Component {
                 this.player2Turn(diceNumber, Player.Player1);
             }
         } else {
-            console.log("wait for your turn");
+            if (!this.canRollDice) {
+                alert("wait");
+                return;
+            }
+            if (!this.canCurrPlayerRollDice) {
+                alert("wait");
+                return;
+            }
         }
     }
 
@@ -402,6 +410,15 @@ export class board extends Component {
                 this.moveOnlyBackward = false;
                 this.currPlayer = nextPlayer;
                 console.log("player 1 final label", this.player1CurrLabel);
+                if (this.checkSnake(this.player1CurrLabel)) {
+                    let end = this.snakeMap.get(this.player1CurrLabel);
+                    tween(this.player1Gotti)
+                        .to(1, {
+                            position: this.cellMap.get(end.toString()).getWorldPosition(),
+                        })
+                        .call(() => (this.player1CurrLabel = end))
+                        .start();
+                }
             });
         } else if (this.checkSnake(finalPosition)) {
             let snakestartNumber = this.snakeMap.get(finalPosition);
@@ -432,6 +449,15 @@ export class board extends Component {
                 this.moveOnlyBackward = false;
                 this.currPlayer = nextPlayer;
                 console.log("player 2 final label", this.player2CurrLabel);
+                if (this.checkSnake(this.player2CurrLabel)) {
+                    let end = this.snakeMap.get(this.player2CurrLabel);
+                    tween(this.player2Gotti)
+                        .to(1, {
+                            position: this.cellMap.get(end.toString()).getWorldPosition(),
+                        })
+                        .call(() => (this.player2CurrLabel = end))
+                        .start();
+                }
             });
         } else if (this.checkSnake(finalPosition)) {
             let snakestartNumber = this.snakeMap.get(finalPosition);
@@ -459,9 +485,11 @@ export class board extends Component {
         if (remainingMoves <= 0) {
             callback();
             this.canRollDice = true;
+            this.canCurrPlayerRollDice = true;
             return;
         }
         this.canRollDice = false;
+        this.canCurrPlayerRollDice = false;
 
         let newLabel: number;
         let isMovingBackward = currLabel === 100 && remainingMoves > 0;
